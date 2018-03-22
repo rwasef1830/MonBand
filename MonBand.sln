@@ -3,7 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonBand.Core", "src\MonBand.Core\MonBand.Core.csproj", "{8FF9FB1A-6167-4EB3-B3BB-4D0D3AA4EEED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonBand.Core", "src\MonBand.Core\MonBand.Core.csproj", "{8FF9FB1A-6167-4EB3-B3BB-4D0D3AA4EEED}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{344D1C07-EB16-4433-B97C-8FA793945B72}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonBand.Tests", "src\MonBand.Tests\MonBand.Tests.csproj", "{ED6D7B8F-6973-4AF0-BD0D-9F571A49CB94}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +22,10 @@ Global
 		{8FF9FB1A-6167-4EB3-B3BB-4D0D3AA4EEED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FF9FB1A-6167-4EB3-B3BB-4D0D3AA4EEED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FF9FB1A-6167-4EB3-B3BB-4D0D3AA4EEED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED6D7B8F-6973-4AF0-BD0D-9F571A49CB94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED6D7B8F-6973-4AF0-BD0D-9F571A49CB94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED6D7B8F-6973-4AF0-BD0D-9F571A49CB94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED6D7B8F-6973-4AF0-BD0D-9F571A49CB94}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
