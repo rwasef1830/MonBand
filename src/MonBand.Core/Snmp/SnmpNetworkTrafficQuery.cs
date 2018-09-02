@@ -18,7 +18,7 @@ namespace MonBand.Core.Snmp
 
         public SnmpNetworkTrafficQuery(IPEndPoint remoteEndPoint, string community, int interfaceNumber)
         {
-            this._community = new OctetString(community ?? "public");
+            this._community = new OctetString(community ?? string.Empty);
             this._remoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException(nameof(remoteEndPoint));
             this._receivedOctetsOid = c_NetworkInterfaceReceivedOctetsPrefix + interfaceNumber;
             this._sentOctetsOid = c_NetworkInterfaceSentOctetsPrefix + interfaceNumber;
@@ -26,16 +26,18 @@ namespace MonBand.Core.Snmp
 
         public async Task<NetworkTraffic> GetTotalTrafficBytesAsync()
         {
-            var result = await Messenger
-                .GetAsync(
-                    VersionCode.V2,
-                    this._remoteEndPoint,
-                    this._community,
-                    new[]
-                    {
-                        new Variable(new ObjectIdentifier(this._receivedOctetsOid)),
-                        new Variable(new ObjectIdentifier(this._sentOctetsOid))
-                    })
+            var result = await Task.Run(
+                    () => Messenger
+                        .Get(
+                            VersionCode.V2,
+                            this._remoteEndPoint,
+                            this._community,
+                            new[]
+                            {
+                                new Variable(new ObjectIdentifier(this._receivedOctetsOid)),
+                                new Variable(new ObjectIdentifier(this._sentOctetsOid))
+                            },
+                            5000))
                 .ConfigureAwait(false);
 
             long totalReceivedBytes = 0;
