@@ -24,6 +24,7 @@ namespace MonBand.Core.Snmp
         public async Task<IDictionary<string, int>> GetIdsByNameAsync()
         {
             var variables = new List<Variable>();
+            // The native async version doesn't have a timeout mechanism and can hang indefinitely.
             await Task.Run(
                     () => Messenger
                         .Walk(

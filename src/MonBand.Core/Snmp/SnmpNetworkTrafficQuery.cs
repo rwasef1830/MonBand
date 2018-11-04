@@ -26,6 +26,7 @@ namespace MonBand.Core.Snmp
 
         public async Task<NetworkTraffic> GetTotalTrafficBytesAsync()
         {
+            // The native async version doesn't have a timeout mechanism and can hang indefinitely.
             var result = await Task.Run(
                     () => Messenger
                         .Get(
