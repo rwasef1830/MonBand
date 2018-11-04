@@ -23,7 +23,7 @@ namespace MonBand.Tests.Core.Snmp
                 new NetworkTraffic(300, 150)
             };
 
-            var trafficQuery = A.Fake<ISnmpNetworkTrafficQuery>();
+            var trafficQuery = A.Fake<ISnmpTrafficQuery>();
             A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync())
                 .ReturnsNextFromSequence(trafficReadings);
             var timeProvider = new ManualTimeProvider();

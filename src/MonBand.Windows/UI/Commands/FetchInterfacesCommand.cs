@@ -64,7 +64,7 @@ namespace MonBand.Windows.UI.Commands
             try
             {
                 var ipAddresses = await Dns.GetHostAddressesAsync(config.Address).ConfigureAwait(true);
-                var query = new SnmpNetworkInterfaceQuery(
+                var query = new SnmpInterfaceQuery(
                     new IPEndPoint(ipAddresses.First(), config.Port),
                     config.Community);
                 var idsByName = await query.GetIdsByNameAsync().ConfigureAwait(true);

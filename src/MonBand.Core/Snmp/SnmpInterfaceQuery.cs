@@ -8,14 +8,14 @@ using Lextm.SharpSnmpLib.Messaging;
 
 namespace MonBand.Core.Snmp
 {
-    public class SnmpNetworkInterfaceQuery : ISnmpNetworkInterfaceQuery
+    public class SnmpInterfaceQuery : ISnmpInterfaceQuery
     {
         static readonly ObjectIdentifier s_NetworkInterfaceNameOid = new ObjectIdentifier("1.3.6.1.2.1.2.2.1.2");
 
         readonly IPEndPoint _remoteEndPoint;
         readonly OctetString _community;
 
-        public SnmpNetworkInterfaceQuery(IPEndPoint remoteEndPoint, string community)
+        public SnmpInterfaceQuery(IPEndPoint remoteEndPoint, string community)
         {
             this._remoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException(nameof(remoteEndPoint));
             this._community = new OctetString(community ?? string.Empty);

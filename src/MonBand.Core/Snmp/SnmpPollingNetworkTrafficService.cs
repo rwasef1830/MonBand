@@ -8,7 +8,7 @@ namespace MonBand.Core.Snmp
 {
     public class SnmpPollingNetworkTrafficService : INetworkTrafficService
     {
-        readonly ISnmpNetworkTrafficQuery _networkTrafficQuery;
+        readonly ISnmpTrafficQuery _trafficQuery;
         readonly ITimeProvider _timeProvider;
         readonly ILogger _log;
         readonly Func<TimeSpan, CancellationToken, Task> _delayTaskFactory;
@@ -20,22 +20,22 @@ namespace MonBand.Core.Snmp
         public event EventHandler<NetworkTraffic> TrafficRateUpdated;
 
         public SnmpPollingNetworkTrafficService(
-            ISnmpNetworkTrafficQuery networkTrafficQuery,
+            ISnmpTrafficQuery trafficQuery,
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory) : this(
-            networkTrafficQuery,
+            trafficQuery,
             timeProvider,
             loggerFactory,
             Task.Delay) { }
 
         internal SnmpPollingNetworkTrafficService(
-            ISnmpNetworkTrafficQuery networkTrafficQuery,
+            ISnmpTrafficQuery trafficQuery,
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory)
         {
-            this._networkTrafficQuery = networkTrafficQuery
-                                        ?? throw new ArgumentNullException(nameof(networkTrafficQuery));
+            this._trafficQuery = trafficQuery
+                                        ?? throw new ArgumentNullException(nameof(trafficQuery));
             this._timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
             this._log = loggerFactory?.CreateLogger(this.GetType().Name)
                         ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -67,7 +67,7 @@ namespace MonBand.Core.Snmp
             {
                 try
                 {
-                    var traffic = await this._networkTrafficQuery
+                    var traffic = await this._trafficQuery
                         .GetTotalTrafficBytesAsync()
                         .ConfigureAwait(false);
                     this._log.LogTrace(

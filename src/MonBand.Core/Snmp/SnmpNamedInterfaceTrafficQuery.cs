@@ -3,19 +3,19 @@ using System.Threading.Tasks;
 
 namespace MonBand.Core.Snmp
 {
-    public class SnmpNamedInterfaceNetworkTrafficQuery : ISnmpNetworkTrafficQuery
+    public class SnmpNamedInterfaceTrafficQuery : ISnmpTrafficQuery
     {
         readonly IPEndPoint _remoteEndPoint;
         readonly string _community;
         readonly string _interfaceName;
-        readonly ISnmpNetworkInterfaceQuery _interfaceQuery;
+        readonly ISnmpInterfaceQuery _interfaceQuery;
 
-        public SnmpNamedInterfaceNetworkTrafficQuery(IPEndPoint remoteEndPoint, string community, string interfaceName)
+        public SnmpNamedInterfaceTrafficQuery(IPEndPoint remoteEndPoint, string community, string interfaceName)
         {
             this._remoteEndPoint = remoteEndPoint;
             this._community = community;
             this._interfaceName = interfaceName;
-            this._interfaceQuery = new SnmpNetworkInterfaceQuery(remoteEndPoint, community);
+            this._interfaceQuery = new SnmpInterfaceQuery(remoteEndPoint, community);
         }
 
         public async Task<NetworkTraffic> GetTotalTrafficBytesAsync()
@@ -26,7 +26,7 @@ namespace MonBand.Core.Snmp
                 return new NetworkTraffic();
             }
 
-            return await new SnmpNetworkTrafficQuery(this._remoteEndPoint, this._community, interfaceId)
+            return await new SnmpTrafficQuery(this._remoteEndPoint, this._community, interfaceId)
                 .GetTotalTrafficBytesAsync().ConfigureAwait(false);
         }
     }

@@ -6,7 +6,7 @@ using Lextm.SharpSnmpLib.Messaging;
 
 namespace MonBand.Core.Snmp
 {
-    public class SnmpNetworkTrafficQuery : ISnmpNetworkTrafficQuery
+    public class SnmpTrafficQuery : ISnmpTrafficQuery
     {
         const string c_NetworkInterfaceReceivedOctetsPrefix = "1.3.6.1.2.1.2.2.1.10.";
         const string c_NetworkInterfaceSentOctetsPrefix = "1.3.6.1.2.1.2.2.1.16.";
@@ -16,7 +16,7 @@ namespace MonBand.Core.Snmp
         readonly string _receivedOctetsOid;
         readonly string _sentOctetsOid;
 
-        public SnmpNetworkTrafficQuery(IPEndPoint remoteEndPoint, string community, int interfaceNumber)
+        public SnmpTrafficQuery(IPEndPoint remoteEndPoint, string community, int interfaceNumber)
         {
             this._community = new OctetString(community ?? string.Empty);
             this._remoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException(nameof(remoteEndPoint));
