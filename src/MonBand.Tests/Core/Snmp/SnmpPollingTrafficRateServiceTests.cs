@@ -12,7 +12,7 @@ using Xunit;
 
 namespace MonBand.Tests.Core.Snmp
 {
-    public class SnmpPollingNetworkTrafficServiceTests
+    public class SnmpPollingTrafficRateServiceTests
     {
         [Fact]
         public async Task Service_calculates_rate_correctly()
@@ -30,7 +30,7 @@ namespace MonBand.Tests.Core.Snmp
             var timeProvider = new ManualTimeProvider();
 
             int i = 0;
-            using (var service = new SnmpPollingNetworkTrafficService(
+            using (var service = new SnmpPollingTrafficRateService(
                 trafficQuery,
                 timeProvider,
                 new NullLoggerFactory(),
