@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Lextm.SharpSnmpLib;
 using Lextm.SharpSnmpLib.Messaging;
+using MonBand.Core.Util;
 
 namespace MonBand.Core.Snmp
 {
@@ -24,7 +26,7 @@ namespace MonBand.Core.Snmp
             this._sentOctetsOid = c_NetworkInterfaceSentOctetsPrefix + interfaceNumber;
         }
 
-        public async Task<NetworkTraffic> GetTotalTrafficBytesAsync()
+        public async Task<NetworkTraffic> GetTotalTrafficBytesAsync(CancellationToken cancellationToken)
         {
             // The native async version doesn't have a timeout mechanism and can hang indefinitely.
             var result = await Task.Run(
@@ -38,7 +40,9 @@ namespace MonBand.Core.Snmp
                                 new Variable(new ObjectIdentifier(this._receivedOctetsOid)),
                                 new Variable(new ObjectIdentifier(this._sentOctetsOid))
                             },
-                            5000))
+                            5000),
+                    cancellationToken)
+                .WithCancellation(cancellationToken)
                 .ConfigureAwait(false);
 
             long totalReceivedBytes = 0;

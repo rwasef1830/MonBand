@@ -86,13 +86,13 @@
                     </Grid.Resources>
 
                     <Label Grid.Row="0" Grid.Column="0">Address</Label>
-                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Address}" />
+                    <TextBox Grid.Row="0" Grid.Column="1" Name="TextBoxAddress" Text="{Binding Address}" />
 
                     <Label Grid.Row="1" Grid.Column="0">Port</Label>
-                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Port}" />
+                    <TextBox Grid.Row="1" Grid.Column="1" Name="TextBoxPort" Text="{Binding Port}" />
 
                     <Label Grid.Row="2" Grid.Column="0">Community</Label>
-                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Community}" />
+                    <TextBox Grid.Row="2" Grid.Column="1" Name="TextBoxCommunity" Text="{Binding Community}" />
 
                     <Label Grid.Row="3" Grid.Column="0">Interface name</Label>
                     <Grid Grid.Row="3" Grid.Column="1">

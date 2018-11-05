@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using FakeItEasy;
@@ -24,7 +25,7 @@ namespace MonBand.Tests.Core.Snmp
             };
 
             var trafficQuery = A.Fake<ISnmpTrafficQuery>();
-            A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync())
+            A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
                 .ReturnsNextFromSequence(trafficReadings);
             var timeProvider = new ManualTimeProvider();
 

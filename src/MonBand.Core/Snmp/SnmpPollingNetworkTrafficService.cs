@@ -68,7 +68,7 @@ namespace MonBand.Core.Snmp
                 try
                 {
                     var traffic = await this._trafficQuery
-                        .GetTotalTrafficBytesAsync()
+                        .GetTotalTrafficBytesAsync(cancellationToken)
                         .ConfigureAwait(false);
                     this._log.LogTrace(
                         "Traffic in bytes: Received: {0} - Sent: {1}",

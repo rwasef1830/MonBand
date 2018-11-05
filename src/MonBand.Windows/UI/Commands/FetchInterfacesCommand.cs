@@ -2,9 +2,11 @@
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using MonBand.Core.Snmp;
+using MonBand.Core.Util;
 using MonBand.Windows.Settings;
 
 namespace MonBand.Windows.UI.Commands
@@ -12,18 +14,26 @@ namespace MonBand.Windows.UI.Commands
     class FetchInterfacesCommand : ICommand
     {
         readonly SettingsWindow _window;
+
         bool _executing;
+        CancellationTokenSource _cancellationTokenSource;
 
         public event EventHandler CanExecuteChanged;
 
         public FetchInterfacesCommand(SettingsWindow window)
         {
             this._window = window ?? throw new ArgumentNullException(nameof(window));
+            this._cancellationTokenSource = new CancellationTokenSource();
 
             window.Initialized += (_, __) =>
             {
                 window.ListBoxMonitors.SelectionChanged += (sender, args) =>
                 {
+                    var oldCancellationTokenSource = Interlocked.Exchange(
+                        ref this._cancellationTokenSource,
+                        new CancellationTokenSource());
+                    oldCancellationTokenSource.Cancel();
+
                     this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 
                     foreach (SnmpPollerConfig config in args.RemovedItems)
@@ -59,16 +69,32 @@ namespace MonBand.Windows.UI.Commands
 
             this._executing = true;
             this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+
+            this._window.TextBoxAddress.IsReadOnly = true;
+            this._window.TextBoxPort.IsReadOnly = true;
+            this._window.TextBoxCommunity.IsReadOnly = true;
             this._window.ComboBoxInterfaceName.IsReadOnly = true;
 
             try
             {
-                var ipAddresses = await Dns.GetHostAddressesAsync(config.Address).ConfigureAwait(true);
+                var cancellationTokenSource = Volatile.Read(ref this._cancellationTokenSource);
+                var ipAddresses = await Dns.GetHostAddressesAsync(config.Address)
+                    .WithCancellation(cancellationTokenSource.Token)
+                    .ConfigureAwait(true);
+
                 var query = new SnmpInterfaceQuery(
                     new IPEndPoint(ipAddresses.First(), config.Port),
                     config.Community);
-                var idsByName = await query.GetIdsByNameAsync().ConfigureAwait(true);
+
+                var idsByName = await query
+                    .GetIdsByNameAsync(cancellationTokenSource.Token)
+                    .ConfigureAwait(true);
+
                 this._window.ComboBoxInterfaceName.ItemsSource = idsByName.Keys;
+            }
+            catch (OperationCanceledException)
+            {
+                // ignore
             }
             catch (Exception ex)
             {
@@ -82,7 +108,11 @@ namespace MonBand.Windows.UI.Commands
             }
             finally
             {
+                this._window.TextBoxAddress.IsReadOnly = false;
+                this._window.TextBoxPort.IsReadOnly = false;
+                this._window.TextBoxCommunity.IsReadOnly = false;
                 this._window.ComboBoxInterfaceName.IsReadOnly = false;
+
                 this._executing = false;
                 this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
             }

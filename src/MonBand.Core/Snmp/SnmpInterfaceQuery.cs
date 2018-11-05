@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Lextm.SharpSnmpLib;
 using Lextm.SharpSnmpLib.Messaging;
+using MonBand.Core.Util;
 
 namespace MonBand.Core.Snmp
 {
@@ -21,7 +23,7 @@ namespace MonBand.Core.Snmp
             this._community = new OctetString(community ?? string.Empty);
         }
 
-        public async Task<IDictionary<string, int>> GetIdsByNameAsync()
+        public async Task<IDictionary<string, int>> GetIdsByNameAsync(CancellationToken cancellationToken)
         {
             var variables = new List<Variable>();
             // The native async version doesn't have a timeout mechanism and can hang indefinitely.
@@ -34,7 +36,9 @@ namespace MonBand.Core.Snmp
                             s_NetworkInterfaceNameOid,
                             variables,
                             5000,
-                            WalkMode.WithinSubtree))
+                            WalkMode.WithinSubtree),
+                    cancellationToken)
+                .WithCancellation(cancellationToken)
                 .ConfigureAwait(false);
 
             return variables.ToDictionary(
