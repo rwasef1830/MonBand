@@ -4,9 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:settings="clr-namespace:MonBand.Windows.Settings"
+        xmlns:oxy="http://oxyplot.org/wpf"
         mc:Ignorable="d"
         x:Name="Self"
-        Title="MonBand Settings" Height="447.924" Width="637.887" Icon="/MonBand.Windows;component/Resources/Traffic.ico">
+        Title="MonBand Settings" 
+        Height="450" 
+        Width="650"
+        MinHeight="450"
+        MinWidth="650"
+        Icon="/MonBand.Windows;component/Resources/Traffic.ico">
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
@@ -59,13 +65,14 @@
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
 
-                <Grid Grid.Row="0" x:Name="GridMonitorForm" Visibility="Hidden">
+                <Grid Grid.Row="0" x:Name="GridMonitorForm" Visibility="Hidden" Margin="0, 0, 0, 10">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
                     <Grid.ColumnDefinitions>
@@ -115,6 +122,9 @@
                                 Command="{Binding DeleteMonitor, ElementName=Self}"
                                 CommandParameter="{Binding}">&#215; Delete monitor</Button>
                     </StackPanel>
+
+                    <oxy:PlotView Grid.Row="5" Grid.ColumnSpan="2" Grid.Column="0" 
+                                  Model="{Binding BandwidthPlotModel}" DataContext="{x:Reference Self}" />
                 </Grid>
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10, 0, 0, 0">
