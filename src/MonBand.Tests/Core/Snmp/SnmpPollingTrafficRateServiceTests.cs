@@ -24,19 +24,25 @@ namespace MonBand.Tests.Core.Snmp
                 new NetworkTraffic(300, 150)
             };
 
+            await RunRateCalculationTest(trafficReadings, 100, 50).ConfigureAwait(true);
+        }
+
+        static async Task RunRateCalculationTest(NetworkTraffic[] inputTrafficReadings, long expectedInBytesRate, long expectedOutBytesRate)
+        {
             var trafficQuery = A.Fake<ISnmpTrafficQuery>();
             A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
-                .ReturnsNextFromSequence(trafficReadings);
+                .ReturnsNextFromSequence(inputTrafficReadings);
             var timeProvider = new ManualTimeProvider();
 
             int i = 0;
             using (var service = new SnmpPollingTrafficRateService(
                 trafficQuery,
+                1,
                 timeProvider,
                 new NullLoggerFactory(),
                 (interval, cancellationToken) =>
                 {
-                    if (++i >= trafficReadings.Length)
+                    if (++i >= inputTrafficReadings.Length)
                     {
                         throw new OperationCanceledException();
                     }
@@ -46,7 +52,6 @@ namespace MonBand.Tests.Core.Snmp
                     return Task.CompletedTask;
                 }))
             {
-
                 var batchingBlock = new BatchBlock<NetworkTraffic>(2);
                 var bufferBlock = new BufferBlock<NetworkTraffic>();
                 bufferBlock.LinkTo(batchingBlock);
@@ -57,8 +62,8 @@ namespace MonBand.Tests.Core.Snmp
                 var trafficRates = await batchingBlock.ReceiveAsync().ConfigureAwait(true);
                 foreach (var trafficRate in trafficRates)
                 {
-                    trafficRate.InBytes.Should().Be(100);
-                    trafficRate.OutBytes.Should().Be(50);
+                    trafficRate.InBytes.Should().Be(expectedInBytesRate);
+                    trafficRate.OutBytes.Should().Be(expectedOutBytesRate);
                 }
             }
         }

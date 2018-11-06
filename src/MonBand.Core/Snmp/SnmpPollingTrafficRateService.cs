@@ -9,6 +9,7 @@ namespace MonBand.Core.Snmp
     public class SnmpPollingTrafficRateService : ITrafficRateService
     {
         readonly ISnmpTrafficQuery _trafficQuery;
+        readonly TimeSpan _pollInterval;
         readonly ITimeProvider _timeProvider;
         readonly ILogger _log;
         readonly Func<TimeSpan, CancellationToken, Task> _delayTaskFactory;
@@ -21,21 +22,25 @@ namespace MonBand.Core.Snmp
 
         public SnmpPollingTrafficRateService(
             ISnmpTrafficQuery trafficQuery,
+            byte pollIntervalSeconds,
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory) : this(
             trafficQuery,
+            pollIntervalSeconds,
             timeProvider,
             loggerFactory,
             Task.Delay) { }
 
         internal SnmpPollingTrafficRateService(
             ISnmpTrafficQuery trafficQuery,
+            byte pollIntervalSeconds,
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory)
         {
             this._trafficQuery = trafficQuery
                                         ?? throw new ArgumentNullException(nameof(trafficQuery));
+            this._pollInterval = TimeSpan.FromSeconds(pollIntervalSeconds);
             this._timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
             this._log = loggerFactory?.CreateLogger(this.GetType().Name)
                         ?? throw new ArgumentNullException(nameof(loggerFactory));
@@ -100,8 +105,6 @@ namespace MonBand.Core.Snmp
 
                     previousTime = now;
                     previousTraffic = traffic;
-
-                    await this._delayTaskFactory(TimeSpan.FromSeconds(1), cancellationToken).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
                 {
@@ -110,6 +113,10 @@ namespace MonBand.Core.Snmp
                 catch (Exception ex)
                 {
                     this._log.LogError(ex, "Unhandled exception in poll loop.");
+                }
+                finally
+                {
+                    await this._delayTaskFactory(this._pollInterval, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
