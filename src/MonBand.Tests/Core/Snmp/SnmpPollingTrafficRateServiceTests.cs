@@ -15,7 +15,7 @@ namespace MonBand.Tests.Core.Snmp
     public class SnmpPollingTrafficRateServiceTests
     {
         [Fact]
-        public async Task Service_calculates_rate_correctly()
+        public async Task Service_calculates_rate()
         {
             var trafficReadings = new[]
             {
@@ -24,10 +24,27 @@ namespace MonBand.Tests.Core.Snmp
                 new NetworkTraffic(300, 150)
             };
 
-            await RunRateCalculationTest(trafficReadings, 100, 50).ConfigureAwait(true);
+            await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
         }
 
-        static async Task RunRateCalculationTest(NetworkTraffic[] inputTrafficReadings, long expectedInBytesRate, long expectedOutBytesRate)
+        [Fact]
+        public async Task Service_calculates_rate_with_counter_wraparound()
+        {
+            var trafficReadings = new[]
+            {
+                new NetworkTraffic(uint.MaxValue - 100, uint.MaxValue - 50),
+                new NetworkTraffic(uint.MaxValue, uint.MaxValue),
+                new NetworkTraffic(100, 50),
+                new NetworkTraffic(200, 100)
+            };
+
+            await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
+        }
+
+        static async Task RunRateCalculationTestAsync(
+            NetworkTraffic[] inputTrafficReadings,
+            long expectedInBytesRate,
+            long expectedOutBytesRate)
         {
             var trafficQuery = A.Fake<ISnmpTrafficQuery>();
             A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))

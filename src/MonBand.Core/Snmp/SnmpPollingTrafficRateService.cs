@@ -89,6 +89,18 @@ namespace MonBand.Core.Snmp
                         var receivedBytesDelta = traffic.InBytes - previousTraffic.InBytes;
                         var sentBytesDelta = traffic.OutBytes - previousTraffic.OutBytes;
 
+                        if (receivedBytesDelta < 0)
+                        {
+                            // Counter wrap around occurred.
+                            receivedBytesDelta += uint.MaxValue;
+                        }
+
+                        if (sentBytesDelta < 0)
+                        {
+                            // Counter wrap around occurred.
+                            sentBytesDelta += uint.MaxValue;
+                        }
+
                         var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
                         var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
                         var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
