@@ -61,6 +61,7 @@
     </Compile>
     <Compile Include="Infrastructure\Input\DelegateCommand.cs" />
     <Compile Include="UI\Commands\FetchInterfacesCommand.cs" />
+    <Compile Include="UI\Helpers\ButtonHelper.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>
