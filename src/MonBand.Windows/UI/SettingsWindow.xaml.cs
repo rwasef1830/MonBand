@@ -15,6 +15,7 @@ using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Settings;
 using MonBand.Windows.UI.Commands;
+using MonBand.Windows.UI.Helpers;
 using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Series;
@@ -23,8 +24,6 @@ namespace MonBand.Windows.UI
 {
     public partial class SettingsWindow
     {
-        const int c_MaxPlotPoints = 100;
-
         DataPointSeries _downloadBandwidthSeries;
         DataPointSeries _uploadBandwidthSeries;
         ITrafficRateService _trafficRateService;
@@ -75,16 +74,16 @@ namespace MonBand.Windows.UI
 
         void InitializePlotModel()
         {
-            this._downloadBandwidthSeries = new LineSeries
+            this._downloadBandwidthSeries = new AreaSeries
             {
                 Title = "Download",
-                Color = OxyColor.Parse("#0000FF")
+                Color = OxyColor.FromArgb(255, 0, 0, 255)
             };
 
-            this._uploadBandwidthSeries = new LineSeries
+            this._uploadBandwidthSeries = new AreaSeries
             {
                 Title = "Upload",
-                Color = OxyColor.Parse("#FF0000")
+                Color = OxyColor.FromArgb(255, 255, 0, 0)
             };
 
             this.BandwidthPlotModel = new PlotModel
@@ -103,7 +102,8 @@ namespace MonBand.Windows.UI
                         Title = "Bandwidth",
                         Unit = "Mbps",
                         IntervalLength = 20,
-                        TitleFontSize = 10
+                        TitleFontSize = 10,
+                        AbsoluteMinimum = 0
                     },
                     new LinearAxis
                     {
@@ -188,11 +188,7 @@ namespace MonBand.Windows.UI
         {
             foreach (var series in new[] { this._uploadBandwidthSeries, this._downloadBandwidthSeries })
             {
-                series.Points.Clear();
-                for (int i = 0; i < c_MaxPlotPoints; i++)
-                {
-                    series.Points.Add(new DataPoint(i, 0));
-                }
+                BandwidthSeriesHelper.Reset(series);
             }
 
             this.Dispatcher.Invoke(() => this.BandwidthPlotModel.InvalidatePlot(true));
@@ -200,24 +196,9 @@ namespace MonBand.Windows.UI
 
         void HandleTrafficRateUpdated(object sender, NetworkTraffic traffic)
         {
-            AddPointToLineSeries((double)traffic.InBytes * 8 / (1024 * 1024), this._downloadBandwidthSeries);
-            AddPointToLineSeries((double)traffic.OutBytes * 8 / (1024 * 1024), this._uploadBandwidthSeries);
+            BandwidthSeriesHelper.AddPoint(traffic.InBytes, this._downloadBandwidthSeries);
+            BandwidthSeriesHelper.AddPoint(traffic.OutBytes, this._uploadBandwidthSeries);
             this.Dispatcher.Invoke(() => this.BandwidthPlotModel.InvalidatePlot(true));
-        }
-
-        static void AddPointToLineSeries(double value, DataPointSeries series)
-        {
-            double x = series.Points.Count > 0
-                ? series.Points[series.Points.Count - 1].X + 1
-                : 0;
-            double y = value;
-
-            if (series.Points.Count >= c_MaxPlotPoints)
-            {
-                series.Points.RemoveAt(0);
-            }
-
-            series.Points.Add(new DataPoint(x, y));
         }
     }
 }

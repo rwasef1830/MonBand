@@ -61,6 +61,16 @@
     </Compile>
     <Compile Include="Infrastructure\Input\DelegateCommand.cs" />
     <Compile Include="UI\Commands\FetchInterfacesCommand.cs" />
+    <Compile Include="UI\Deskband.xaml.cs">
+      <DependentUpon>Deskband.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\DeskbandControl.xaml.cs">
+      <DependentUpon>DeskbandControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\DeskbandTestWindow.xaml.cs">
+      <DependentUpon>DeskbandTestWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Helpers\BandwidthSeriesHelper.cs" />
     <Compile Include="UI\Helpers\ButtonHelper.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
@@ -88,6 +98,18 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="UI\Deskband.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\DeskbandControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\DeskbandTestWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="UI\SettingsWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

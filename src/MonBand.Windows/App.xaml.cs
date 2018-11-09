@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows;
 using MonBand.Windows.Settings;
 using MonBand.Windows.UI;
@@ -14,7 +15,16 @@ namespace MonBand.Windows
             base.OnStartup(e);
 
             var settings = AppSettings.Load();
-            this.MainWindow = new SettingsWindow(settings);
+
+            if (e.Args.FirstOrDefault() == "deskband-test")
+            {
+                this.MainWindow = new DeskbandTestWindow(settings);
+            }
+            else
+            {
+                this.MainWindow = new SettingsWindow(settings);
+            }
+
             this.MainWindow.Show();
         }
     }
