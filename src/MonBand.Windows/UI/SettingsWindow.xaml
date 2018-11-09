@@ -10,9 +10,9 @@
         x:Name="Self"
         Title="MonBand Settings" 
         Height="450" 
-        Width="650"
+        Width="700"
         MinHeight="450"
-        MinWidth="650"
+        MinWidth="700"
         Icon="/MonBand.Windows;component/Resources/Traffic.ico">
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -37,7 +37,7 @@
             </Grid.RowDefinitions>
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150"></ColumnDefinition>
+                <ColumnDefinition Width="200"></ColumnDefinition>
                 <ColumnDefinition Width="*"></ColumnDefinition>
             </Grid.ColumnDefinitions>
 
@@ -49,9 +49,10 @@
                     <DataTemplate DataType="{x:Type settings:SnmpPollerConfig}">
                         <TextBlock>
                             <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0}:{1}">
+                                <MultiBinding StringFormat="{}{0}:{1} - {2}">
                                     <Binding Path="Address" />
                                     <Binding Path="Port" />
+                                    <Binding Path="InterfaceName" />
                                 </MultiBinding>
                             </TextBlock.Text>
                         </TextBlock>
