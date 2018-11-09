@@ -1,12 +1,10 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using MonBand.Core.Snmp;
-using MonBand.Core.Util;
 using MonBand.Windows.Settings;
 
 namespace MonBand.Windows.UI.Commands
@@ -78,12 +76,9 @@ namespace MonBand.Windows.UI.Commands
             try
             {
                 var cancellationTokenSource = Volatile.Read(ref this._cancellationTokenSource);
-                var ipAddresses = await Dns.GetHostAddressesAsync(config.Address)
-                    .WithCancellation(cancellationTokenSource.Token)
-                    .ConfigureAwait(true);
 
                 var query = new SnmpInterfaceQuery(
-                    new IPEndPoint(ipAddresses.First(), config.Port),
+                    new DnsEndPoint(config.Address, config.Port),
                     config.Community);
 
                 var idsByName = await query

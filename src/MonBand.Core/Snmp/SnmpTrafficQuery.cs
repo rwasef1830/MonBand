@@ -13,12 +13,12 @@ namespace MonBand.Core.Snmp
         const string c_NetworkInterfaceReceivedOctetsPrefix = "1.3.6.1.2.1.2.2.1.10.";
         const string c_NetworkInterfaceSentOctetsPrefix = "1.3.6.1.2.1.2.2.1.16.";
 
-        readonly IPEndPoint _remoteEndPoint;
+        readonly EndPoint _remoteEndPoint;
         readonly OctetString _community;
         readonly string _receivedOctetsOid;
         readonly string _sentOctetsOid;
 
-        public SnmpTrafficQuery(IPEndPoint remoteEndPoint, string community, int interfaceNumber)
+        public SnmpTrafficQuery(EndPoint remoteEndPoint, string community, int interfaceNumber)
         {
             this._community = new OctetString(community ?? string.Empty);
             this._remoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException(nameof(remoteEndPoint));
@@ -28,12 +28,16 @@ namespace MonBand.Core.Snmp
 
         public async Task<NetworkTraffic> GetTotalTrafficBytesAsync(CancellationToken cancellationToken)
         {
+            var remoteIpEndPoint = await this._remoteEndPoint.ResolveAsync()
+                .WithCancellation(cancellationToken)
+                .ConfigureAwait(false);
+
             // The native async version doesn't have a timeout mechanism and can hang indefinitely.
             var result = await Task.Run(
                     () => Messenger
                         .Get(
                             VersionCode.V2,
-                            this._remoteEndPoint,
+                            remoteIpEndPoint,
                             this._community,
                             new[]
                             {

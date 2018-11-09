@@ -14,10 +14,10 @@ namespace MonBand.Core.Snmp
     {
         static readonly ObjectIdentifier s_NetworkInterfaceNameOid = new ObjectIdentifier("1.3.6.1.2.1.2.2.1.2");
 
-        readonly IPEndPoint _remoteEndPoint;
+        readonly EndPoint _remoteEndPoint;
         readonly OctetString _community;
 
-        public SnmpInterfaceQuery(IPEndPoint remoteEndPoint, string community)
+        public SnmpInterfaceQuery(EndPoint remoteEndPoint, string community)
         {
             this._remoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException(nameof(remoteEndPoint));
             this._community = new OctetString(community ?? string.Empty);
@@ -25,13 +25,17 @@ namespace MonBand.Core.Snmp
 
         public async Task<IDictionary<string, int>> GetIdsByNameAsync(CancellationToken cancellationToken)
         {
+            var remoteIpEndPoint = await this._remoteEndPoint.ResolveAsync()
+                .WithCancellation(cancellationToken)
+                .ConfigureAwait(false);
+
             var variables = new List<Variable>();
             // The native async version doesn't have a timeout mechanism and can hang indefinitely.
             await Task.Run(
                     () => Messenger
                         .Walk(
                             VersionCode.V1,
-                            this._remoteEndPoint,
+                            remoteIpEndPoint,
                             this._community,
                             s_NetworkInterfaceNameOid,
                             variables,

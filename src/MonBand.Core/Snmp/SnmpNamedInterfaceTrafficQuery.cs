@@ -6,12 +6,12 @@ namespace MonBand.Core.Snmp
 {
     public class SnmpNamedInterfaceTrafficQuery : ISnmpTrafficQuery
     {
-        readonly IPEndPoint _remoteEndPoint;
+        readonly EndPoint _remoteEndPoint;
         readonly string _community;
         readonly string _interfaceName;
         readonly ISnmpInterfaceQuery _interfaceQuery;
 
-        public SnmpNamedInterfaceTrafficQuery(IPEndPoint remoteEndPoint, string community, string interfaceName)
+        public SnmpNamedInterfaceTrafficQuery(EndPoint remoteEndPoint, string community, string interfaceName)
         {
             this._remoteEndPoint = remoteEndPoint;
             this._community = community;

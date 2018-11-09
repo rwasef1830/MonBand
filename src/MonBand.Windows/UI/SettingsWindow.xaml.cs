@@ -28,7 +28,6 @@ namespace MonBand.Windows.UI
         DataPointSeries _downloadBandwidthSeries;
         DataPointSeries _uploadBandwidthSeries;
         ITrafficRateService _trafficRateService;
-        CancellationTokenSource _dnsCancellationTokenSource;
 
         public ObservableCollection<SnmpPollerConfig> SnmpPollers { get; }
         public ICommand AddMonitor { get; }
@@ -66,7 +65,6 @@ namespace MonBand.Windows.UI
             this.InitializePlotModel();
             this.InitializeComponent();
 
-            this._dnsCancellationTokenSource = new CancellationTokenSource();
             this.ListBoxMonitors.SelectionChanged += this.HandleListBoxMonitorsSelectionChanged;
 
             if (this.ListBoxMonitors.Items.Count > 0)
@@ -124,11 +122,6 @@ namespace MonBand.Windows.UI
         {
             this.GridMonitorForm.Visibility = e.AddedItems.Count == 0 ? Visibility.Hidden : Visibility.Visible;
 
-            var oldDnsCancellationTokenSource = Interlocked.Exchange(
-                ref this._dnsCancellationTokenSource,
-                new CancellationTokenSource());
-            oldDnsCancellationTokenSource.Cancel();
-
             foreach (SnmpPollerConfig config in e.RemovedItems)
             {
                 config.PropertyChanged -= this.HandleConfigOnPropertyChanged;
@@ -146,19 +139,13 @@ namespace MonBand.Windows.UI
             this.UpdateTrafficRateService((SnmpPollerConfig)sender);
         }
 
-        async void UpdateTrafficRateService(SnmpPollerConfig config)
+        void UpdateTrafficRateService(SnmpPollerConfig config)
         {
-            var cancellationTokenSource = Volatile.Read(ref this._dnsCancellationTokenSource);
-
             try
             {
                 this.ResetLineSeries();
 
-                var ipAddresses = await Dns.GetHostAddressesAsync(config.Address)
-                    .WithCancellation(cancellationTokenSource.Token)
-                    .ConfigureAwait(true);
-
-                var remoteEndPoint = new IPEndPoint(ipAddresses.First(), config.Port);
+                var remoteEndPoint = new DnsEndPoint(config.Address, config.Port);
                 var newTrafficRateService = new SnmpPollingTrafficRateService(
                     new SnmpNamedInterfaceTrafficQuery(remoteEndPoint, config.Community, config.InterfaceName),
                     3,
