@@ -19,7 +19,10 @@ namespace MonBand.Windows.UI
     {
         readonly IDictionary<
             ITrafficRateService,
-            (BandwidthPlotModel Model, TextBlock UpTextBlock, TextBlock DownTextBlock)> _objectsByService;
+            (BandwidthPlotModel Model,
+            TextBlock DownTextBlock,
+            TextBlock UpTextBlock,
+            TextBlock MaximumTextBlock)> _objectsByService;
 
         public DeskbandControl() : this(AppSettings.Load()) { }
 
@@ -27,7 +30,8 @@ namespace MonBand.Windows.UI
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
 
-            this._objectsByService = new Dictionary<ITrafficRateService, (BandwidthPlotModel, TextBlock, TextBlock)>();
+            this._objectsByService =
+                new Dictionary<ITrafficRateService, (BandwidthPlotModel, TextBlock, TextBlock, TextBlock)>();
 
             this.InitializeComponent();
             this.InitializeMonitors(settings.SnmpPollers);
@@ -50,13 +54,23 @@ namespace MonBand.Windows.UI
                     SystemTimeProvider.Instance,
                     new NullLoggerFactory());
 
+                var maximumTextBlock = new TextBlock { Text = "Maximum: 0.0 Mbps" };
+
                 var container = new Grid
                 {
                     ColumnDefinitions = { new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) } },
                     RowDefinitions = { new RowDefinition { Height = new GridLength(1, GridUnitType.Star) } },
-                    ToolTip = new TextBlock
+                    ToolTip = new Label
                     {
-                        Text = snmpPoller.ToString()
+                        Content = new StackPanel
+                        {
+                            Orientation = Orientation.Vertical,
+                            Children =
+                            {
+                                new TextBlock { Text = snmpPoller.ToString() },
+                                maximumTextBlock
+                            }
+                        }
                     }
                 };
 
@@ -105,7 +119,11 @@ namespace MonBand.Windows.UI
                 Grid.SetColumn(container, i);
                 this.RootGrid.Children.Add(container);
 
-                this._objectsByService[trafficRateService] = (plotModel, upTextBlock, downTextBlock);
+                this._objectsByService[trafficRateService] = (
+                    plotModel,
+                    downTextBlock,
+                    upTextBlock,
+                    maximumTextBlock);
 
                 trafficRateService.Start();
             }
@@ -123,6 +141,7 @@ namespace MonBand.Windows.UI
                 objects.DownTextBlock.Text = $"D: {megabits.InMegabits:F1} Mbps";
                 objects.UpTextBlock.Text = $"U: {megabits.OutMegabits:F1} Mbps";
                 objects.Model.InvalidatePlot(true);
+                objects.MaximumTextBlock.Text = $"Maximum: {objects.Model.BandwidthAxis.DataMaximum:F1} Mbps";
             });
         }
     }
