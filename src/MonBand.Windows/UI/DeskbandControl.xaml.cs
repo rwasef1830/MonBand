@@ -56,7 +56,7 @@ namespace MonBand.Windows.UI
                     RowDefinitions = { new RowDefinition { Height = new GridLength(1, GridUnitType.Star) } },
                     ToolTip = new TextBlock
                     {
-                        Text = $"{snmpPoller.Address}:{snmpPoller.Port} - {snmpPoller.InterfaceName}"
+                        Text = snmpPoller.ToString()
                     }
                 };
 

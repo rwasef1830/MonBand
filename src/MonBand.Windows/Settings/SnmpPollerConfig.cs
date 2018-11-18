@@ -68,5 +68,10 @@ namespace MonBand.Windows.Settings
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        public override string ToString()
+        {
+            return $"{this.Address}:{this.Port} - {this.InterfaceName}";
+        }
     }
 }
