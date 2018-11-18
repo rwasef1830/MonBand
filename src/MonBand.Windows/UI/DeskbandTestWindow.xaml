@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:MonBand.Windows.UI"
         mc:Ignorable="d"
         Title="MonBand Deskband Test" 
-        Height="60" 
+        Height="75" 
         Width="300" 
         Icon="/MonBand.Windows;component/Resources/Traffic.ico">
     <Grid>
