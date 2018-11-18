@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
 using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
@@ -70,18 +71,21 @@ namespace MonBand.Windows.UI
                 var plot = new PlotView { Model = plotModel };
                 container.Children.Add(plot);
 
-                var textBlockStackPanel = new StackPanel { Orientation = Orientation.Horizontal };
+                var textBlockStackPanel = new StackPanel
+                {
+                    Orientation = Orientation.Vertical,
+                    Background = Brushes.White
+                };
                 var downTextBlock = new TextBlock
                 {
                     FontSize = 10,
-                    Foreground = new SolidColorBrush(Color.FromArgb(255, 0, 0, 255)),
-                    Margin = new Thickness(0, 0, 5, 0),
+                    Foreground = Brushes.Blue,
                     Text = "D: -"
                 };
                 var upTextBlock = new TextBlock
                 {
                     FontSize = 10,
-                    Foreground = new SolidColorBrush(Color.FromArgb(255, 255, 0, 0)),
+                    Foreground = Brushes.Red,
                     Text = "U: -"
                 };
                 textBlockStackPanel.Children.Add(downTextBlock);
