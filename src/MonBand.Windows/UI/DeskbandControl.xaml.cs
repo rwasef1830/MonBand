@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
@@ -17,7 +16,7 @@ using OxyPlot.Axes;
 using OxyPlot.Wpf;
 using DataPointSeries = OxyPlot.Series.DataPointSeries;
 using LinearAxis = OxyPlot.Axes.LinearAxis;
-using LineSeries = OxyPlot.Series.LineSeries;
+using AreaSeries = OxyPlot.Series.AreaSeries;
 
 namespace MonBand.Windows.UI
 {
@@ -80,12 +79,14 @@ namespace MonBand.Windows.UI
                 {
                     FontSize = 10,
                     Foreground = Brushes.Blue,
+                    Margin = new Thickness(0, 0, 2, 0),
                     Text = "D: -"
                 };
                 var upTextBlock = new TextBlock
                 {
                     FontSize = 10,
                     Foreground = Brushes.Red,
+                    Margin = new Thickness(0, 0, 2, 0),
                     Text = "U: -"
                 };
                 textBlockStackPanel.Children.Add(downTextBlock);
@@ -132,12 +133,12 @@ namespace MonBand.Windows.UI
                 },
                 Series =
                 {
-                    new LineSeries
+                    new AreaSeries
                     {
                         Title = "Download",
                         Color = OxyColor.FromArgb(255, 0, 0, 255)
                     },
-                    new LineSeries
+                    new AreaSeries
                     {
                         Title = "Upload",
                         Color = OxyColor.FromArgb(255, 255, 0, 0)
@@ -151,7 +152,7 @@ namespace MonBand.Windows.UI
 
         void ResetLineSeries(PlotModel plotModel)
         {
-            foreach (var series in plotModel.Series.OfType<LineSeries>())
+            foreach (var series in plotModel.Series.OfType<DataPointSeries>())
             {
                 BandwidthSeriesHelper.Reset(series);
             }
