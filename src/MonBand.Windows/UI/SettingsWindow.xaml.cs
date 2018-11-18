@@ -13,19 +13,14 @@ using MonBand.Core;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
+using MonBand.Windows.Models;
 using MonBand.Windows.Settings;
 using MonBand.Windows.UI.Commands;
-using MonBand.Windows.UI.Helpers;
-using OxyPlot;
-using OxyPlot.Axes;
-using OxyPlot.Series;
 
 namespace MonBand.Windows.UI
 {
     public partial class SettingsWindow
     {
-        DataPointSeries _downloadBandwidthSeries;
-        DataPointSeries _uploadBandwidthSeries;
         ITrafficRateService _trafficRateService;
 
         public ObservableCollection<SnmpPollerConfig> SnmpPollers { get; }
@@ -33,7 +28,7 @@ namespace MonBand.Windows.UI
         public ICommand FetchInterfaces { get; }
         public ICommand DeleteMonitor { get; }
         public ICommand SaveAndApplyConfiguration { get; }
-        public PlotModel BandwidthPlotModel { get; private set; }
+        public BandwidthPlotModel PlotModel { get; }
 
         public SettingsWindow(AppSettings settings)
         {
@@ -61,7 +56,7 @@ namespace MonBand.Windows.UI
                     this.Close();
                 });
 
-            this.InitializePlotModel();
+            this.PlotModel = new BandwidthPlotModel(100);
             this.InitializeComponent();
 
             this.ListBoxMonitors.SelectionChanged += this.HandleListBoxMonitorsSelectionChanged;
@@ -70,52 +65,6 @@ namespace MonBand.Windows.UI
             {
                 this.ListBoxMonitors.SelectedItem = this.ListBoxMonitors.Items[0];
             }
-        }
-
-        void InitializePlotModel()
-        {
-            this._downloadBandwidthSeries = new AreaSeries
-            {
-                Title = "Download",
-                Color = OxyColor.FromArgb(255, 0, 0, 255)
-            };
-
-            this._uploadBandwidthSeries = new AreaSeries
-            {
-                Title = "Upload",
-                Color = OxyColor.FromArgb(255, 255, 0, 0)
-            };
-
-            this.BandwidthPlotModel = new PlotModel
-            {
-                LegendMargin = 0,
-                LegendFontSize = 10,
-                LegendPlacement = LegendPlacement.Inside,
-                LegendPosition = LegendPosition.LeftTop,
-                LegendItemSpacing = 0,
-                Axes =
-                {
-                    new LinearAxis
-                    {
-                        TickStyle = TickStyle.Inside,
-                        Position = AxisPosition.Left,
-                        Title = "Bandwidth",
-                        Unit = "Mbps",
-                        IntervalLength = 20,
-                        TitleFontSize = 10,
-                        AbsoluteMinimum = 0
-                    },
-                    new LinearAxis
-                    {
-                        TickStyle = TickStyle.None,
-                        Position = AxisPosition.Bottom,
-                        IsAxisVisible = false
-                    }
-                },
-                Series = { this._downloadBandwidthSeries, this._uploadBandwidthSeries }
-            };
-
-            this.ResetLineSeries();
         }
 
         void HandleListBoxMonitorsSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -143,8 +92,6 @@ namespace MonBand.Windows.UI
         {
             try
             {
-                this.ResetLineSeries();
-
                 var remoteEndPoint = new DnsEndPoint(config.Address, config.Port);
                 var newTrafficRateService = new SnmpPollingTrafficRateService(
                     new SnmpNamedInterfaceTrafficQuery(remoteEndPoint, config.Community, config.InterfaceName),
@@ -184,21 +131,11 @@ namespace MonBand.Windows.UI
             }
         }
 
-        void ResetLineSeries()
-        {
-            foreach (var series in new[] { this._uploadBandwidthSeries, this._downloadBandwidthSeries })
-            {
-                BandwidthSeriesHelper.Reset(series);
-            }
-
-            this.Dispatcher.Invoke(() => this.BandwidthPlotModel.InvalidatePlot(true));
-        }
-
         void HandleTrafficRateUpdated(object sender, NetworkTraffic traffic)
         {
-            BandwidthSeriesHelper.AddPoint(traffic.InBytes, this._downloadBandwidthSeries);
-            BandwidthSeriesHelper.AddPoint(traffic.OutBytes, this._uploadBandwidthSeries);
-            this.Dispatcher.Invoke(() => this.BandwidthPlotModel.InvalidatePlot(true));
+            var megabits = traffic.AsMegabits();
+            this.PlotModel.AddTraffic(megabits.InMegabits, megabits.OutMegabits);
+            this.Dispatcher.Invoke(() => this.PlotModel.InvalidatePlot(true));
         }
     }
 }

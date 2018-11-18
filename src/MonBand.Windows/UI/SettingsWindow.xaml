@@ -126,7 +126,7 @@
                     </StackPanel>
 
                     <oxy:PlotView Grid.Row="5" Grid.ColumnSpan="2" Grid.Column="0" 
-                                  Model="{Binding BandwidthPlotModel}" DataContext="{x:Reference Self}" />
+                                  Model="{Binding PlotModel}" DataContext="{x:Reference Self}" />
                 </Grid>
 
                 <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10, 0, 0, 0">

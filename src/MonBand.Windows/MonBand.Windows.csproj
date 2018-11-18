@@ -60,6 +60,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Infrastructure\Input\DelegateCommand.cs" />
+    <Compile Include="Models\BandwidthPlotModel.cs" />
     <Compile Include="UI\Commands\FetchInterfacesCommand.cs" />
     <Compile Include="UI\Deskband.xaml.cs">
       <DependentUpon>Deskband.xaml</DependentUpon>
@@ -70,7 +71,6 @@
     <Compile Include="UI\DeskbandTestWindow.xaml.cs">
       <DependentUpon>DeskbandTestWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="UI\Helpers\BandwidthSeriesHelper.cs" />
     <Compile Include="UI\Helpers\ButtonHelper.cs" />
     <Compile Include="UI\SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>

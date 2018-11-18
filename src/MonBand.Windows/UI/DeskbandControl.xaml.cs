@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,21 +8,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
+using MonBand.Windows.Models;
 using MonBand.Windows.Settings;
-using MonBand.Windows.UI.Helpers;
 using OxyPlot;
-using OxyPlot.Axes;
 using OxyPlot.Wpf;
-using DataPointSeries = OxyPlot.Series.DataPointSeries;
-using LinearAxis = OxyPlot.Axes.LinearAxis;
-using AreaSeries = OxyPlot.Series.AreaSeries;
 
 namespace MonBand.Windows.UI
 {
     public partial class DeskbandControl
     {
-        readonly IDictionary<ITrafficRateService, (PlotModel Model, TextBlock UpTextBlock, TextBlock DownTextBlock)>
-            _objectsByService;
+        readonly IDictionary<
+            ITrafficRateService,
+            (BandwidthPlotModel Model, TextBlock UpTextBlock, TextBlock DownTextBlock)> _objectsByService;
 
         public DeskbandControl() : this(AppSettings.Load()) { }
 
@@ -31,7 +27,7 @@ namespace MonBand.Windows.UI
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
 
-            this._objectsByService = new Dictionary<ITrafficRateService, (PlotModel, TextBlock, TextBlock)>();
+            this._objectsByService = new Dictionary<ITrafficRateService, (BandwidthPlotModel, TextBlock, TextBlock)>();
 
             this.InitializeComponent();
             this.InitializeMonitors(settings.SnmpPollers);
@@ -64,7 +60,13 @@ namespace MonBand.Windows.UI
                     }
                 };
 
-                var plotModel = this.CreatePlotModel();
+                var plotModel = new BandwidthPlotModel(100)
+                {
+                    PlotMargins = new OxyThickness(0),
+                    Padding = new OxyThickness(0),
+                    IsLegendVisible = false,
+                    BandwidthAxis = { IsAxisVisible = false }
+                };
                 trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 
                 var plot = new PlotView { Model = plotModel };
@@ -109,71 +111,17 @@ namespace MonBand.Windows.UI
             }
         }
 
-        PlotModel CreatePlotModel()
-        {
-            var plotModel = new PlotModel
-            {
-                PlotMargins = new OxyThickness(0),
-                Padding = new OxyThickness(0),
-                IsLegendVisible = false,
-                Axes =
-                {
-                    new LinearAxis
-                    {
-                        TickStyle = TickStyle.Inside,
-                        Position = AxisPosition.Left,
-                        IsAxisVisible = false
-                    },
-                    new LinearAxis
-                    {
-                        TickStyle = TickStyle.None,
-                        Position = AxisPosition.Bottom,
-                        IsAxisVisible = false
-                    }
-                },
-                Series =
-                {
-                    new AreaSeries
-                    {
-                        Title = "Download",
-                        Color = OxyColor.FromArgb(255, 0, 0, 255)
-                    },
-                    new AreaSeries
-                    {
-                        Title = "Upload",
-                        Color = OxyColor.FromArgb(255, 255, 0, 0)
-                    }
-                }
-            };
-
-            this.ResetLineSeries(plotModel);
-            return plotModel;
-        }
-
-        void ResetLineSeries(PlotModel plotModel)
-        {
-            foreach (var series in plotModel.Series.OfType<DataPointSeries>())
-            {
-                BandwidthSeriesHelper.Reset(series);
-            }
-
-            this.Dispatcher.Invoke(() => plotModel.InvalidatePlot(true));
-        }
-
         void HandleTrafficRateUpdated(object sender, NetworkTraffic traffic)
         {
             var objects = this._objectsByService[(ITrafficRateService)sender];
 
-            BandwidthSeriesHelper.AddPoint(traffic.InBytes, (DataPointSeries)objects.Model.Series[0]);
-            BandwidthSeriesHelper.AddPoint(traffic.OutBytes, (DataPointSeries)objects.Model.Series[1]);
-
-            var inMegabits = BandwidthSeriesHelper.ConvertToMegabits(traffic.InBytes);
-            var outMegabits = BandwidthSeriesHelper.ConvertToMegabits(traffic.OutBytes);
+            var megabits = traffic.AsMegabits();
+            objects.Model.AddTraffic(megabits.InMegabits, megabits.OutMegabits);
 
             this.Dispatcher.Invoke(() =>
             {
-                objects.DownTextBlock.Text = $"D: {inMegabits:F1} Mbps";
-                objects.UpTextBlock.Text = $"U: {outMegabits:F1} Mbps";
+                objects.DownTextBlock.Text = $"D: {megabits.InMegabits:F1} Mbps";
+                objects.UpTextBlock.Text = $"U: {megabits.OutMegabits:F1} Mbps";
                 objects.Model.InvalidatePlot(true);
             });
         }

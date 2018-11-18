@@ -15,5 +15,12 @@
         {
             return $"In: {this.InBytes}; Out: {this.OutBytes}";
         }
+
+        public (double InMegabits, double OutMegabits) AsMegabits()
+        {
+            var inMegabits = (double)this.InBytes * 8 / (1000 * 1000);
+            var outMegabits = (double)this.OutBytes * 8 / (1000 * 1000);
+            return (inMegabits, outMegabits);
+        }
     }
 }
