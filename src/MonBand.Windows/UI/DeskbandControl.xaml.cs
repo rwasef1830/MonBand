@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
+using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
@@ -12,21 +14,43 @@ namespace MonBand.Windows.UI
 {
     public partial class DeskbandControl
     {
+        public static readonly DependencyProperty AppSettingsProperty = DependencyProperty.Register(
+            nameof(AppSettings),
+            typeof(AppSettings),
+            typeof(DeskbandControl),
+            new PropertyMetadata { PropertyChangedCallback = AppSettingsChanged });
+
         readonly IDictionary<ITrafficRateService, CompactMonitorView> _viewsByService;
 
-        public DeskbandControl() : this(AppSettings.Load()) { }
-
-        public DeskbandControl(AppSettings settings)
+        public AppSettings AppSettings
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
-
-            this._viewsByService = new Dictionary<ITrafficRateService, CompactMonitorView>();
-
-            this.InitializeComponent();
-            this.InitializeMonitors(settings.SnmpPollers);
+            get => (AppSettings)this.GetValue(AppSettingsProperty);
+            set => this.SetValue(AppSettingsProperty, value);
         }
 
-        void InitializeMonitors(IList<SnmpPollerConfig> snmpPollers)
+        public DeskbandControl()
+        {
+            this._viewsByService = new Dictionary<ITrafficRateService, CompactMonitorView>();
+            this.InitializeComponent();
+        }
+
+        static void AppSettingsChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            var self = (DeskbandControl)d;
+
+            foreach (var item in self._viewsByService)
+            {
+                item.Key.Dispose();
+                item.Key.TrafficRateUpdated -= self.HandleTrafficRateUpdated;
+            }
+
+            self._viewsByService.Clear();
+
+            var newAppSettings = (AppSettings)e.NewValue;
+            self.InitializeSnmpPollers(new ReadOnlyCollection<SnmpPollerConfig>(newAppSettings.SnmpPollers));
+        }
+
+        void InitializeSnmpPollers(IReadOnlyList<SnmpPollerConfig> snmpPollers)
         {
             if (snmpPollers == null) throw new ArgumentNullException(nameof(snmpPollers));
 

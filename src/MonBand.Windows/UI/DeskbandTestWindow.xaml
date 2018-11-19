@@ -10,5 +10,6 @@
         Width="300" 
         Icon="/MonBand.Windows;component/Resources/Traffic.ico">
     <Grid>
+        <local:DeskbandControl x:Name="Control" />
     </Grid>
 </Window>

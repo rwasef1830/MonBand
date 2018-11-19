@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using CSDeskBand;
+using MonBand.Windows.Settings;
 
 namespace MonBand.Windows.UI
 {
@@ -21,6 +22,8 @@ namespace MonBand.Windows.UI
             this.Options.IsFixed = false;
             this.Options.HeightIncrement = 1;
             this.Options.HeightCanChange = true;
+
+            this.Control.AppSettings = AppSettings.Load();
         }
     }
 }
