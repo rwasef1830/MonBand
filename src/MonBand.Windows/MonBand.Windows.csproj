@@ -65,6 +65,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="UI\CompactMonitorView.cs" />
     <Compile Include="Infrastructure\Input\DelegateCommand.cs" />
     <Compile Include="Models\BandwidthPlotModel.cs" />
     <Compile Include="UI\Commands\FetchInterfacesCommand.cs" />
