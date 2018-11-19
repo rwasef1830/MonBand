@@ -4,6 +4,10 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
 
     <IsPackable>false</IsPackable>
+
+    <SignAssembly>true</SignAssembly>
+
+    <AssemblyOriginatorKeyFile>..\..\build\MonBand.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
