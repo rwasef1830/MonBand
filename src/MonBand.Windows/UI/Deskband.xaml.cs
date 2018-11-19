@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using CSDeskBand;
+using MonBand.Core.Util;
 using MonBand.Windows.Settings;
 
 namespace MonBand.Windows.UI
@@ -9,6 +10,8 @@ namespace MonBand.Windows.UI
     [CSDeskBandRegistration(Name = "MonBand")]
     public partial class Deskband
     {
+        readonly CrossProcessSignal _signal;
+
         public Deskband()
         {
             this.InitializeComponent();
@@ -23,7 +26,20 @@ namespace MonBand.Windows.UI
             this.Options.HeightIncrement = 1;
             this.Options.HeightCanChange = true;
 
-            this.Control.AppSettings = AppSettings.Load();
+            this._signal = new CrossProcessSignal(App.ReloadEventName);
+            this.Reload();
+            this._signal.Signaled += (_, __) => this.Reload();
+        }
+
+        void Reload()
+        {
+            var appSettings = AppSettings.Load();
+            this.Dispatcher.Invoke(() => this.Control.AppSettings = appSettings);
+        }
+
+        protected override void OnClose()
+        {
+            this._signal.Dispose();
         }
     }
 }

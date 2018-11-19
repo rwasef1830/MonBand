@@ -8,20 +8,21 @@ namespace MonBand.Windows
 {
     public partial class App
     {
+        public const string ReloadEventName = nameof(MonBand) + "-Reload";
+
         protected override void OnStartup(StartupEventArgs e)
         {
             if (e == null) throw new ArgumentNullException(nameof(e));
 
             base.OnStartup(e);
 
-            var settings = AppSettings.Load();
-
             if (e.Args.FirstOrDefault() == "deskband-test")
             {
-                this.MainWindow = new DeskbandTestWindow(settings);
+                this.MainWindow = new DeskbandTestWindow();
             }
             else
             {
+                var settings = AppSettings.Load();
                 this.MainWindow = new SettingsWindow(settings);
             }
 

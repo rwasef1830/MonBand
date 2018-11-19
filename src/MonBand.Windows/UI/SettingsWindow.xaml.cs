@@ -53,6 +53,7 @@ namespace MonBand.Windows.UI
                 {
                     settings.SnmpPollers = this.SnmpPollers.ToList();
                     settings.Save();
+                    CrossProcessSignal.Signal(App.ReloadEventName);
                     this.Close();
                 });
 
