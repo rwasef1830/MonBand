@@ -4,7 +4,7 @@ using System.Windows.Controls.Primitives;
 
 namespace MonBand.Windows.UI.Helpers
 {
-    public static class ButtonHelper
+    static class ButtonHelper
     {
         public static readonly DependencyProperty CommandParameterProperty = DependencyProperty.RegisterAttached(
             "CommandParameter",

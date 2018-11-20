@@ -19,7 +19,7 @@ using MonBand.Windows.UI.Commands;
 
 namespace MonBand.Windows.UI
 {
-    public partial class SettingsWindow
+    partial class SettingsWindow
     {
         ITrafficRateService _trafficRateService;
 

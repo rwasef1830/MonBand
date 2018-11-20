@@ -1,0 +1,63 @@
+﻿using System;
+using System.Runtime.InteropServices;
+using System.Windows;
+using CSDeskBand;
+using CSDeskBand.Wpf;
+using MonBand.Core.Util;
+using MonBand.Windows.Settings;
+using MonBand.Windows.UI;
+using Size = CSDeskBand.Size;
+
+namespace MonBand.Windows.ComHost
+{
+    [ComVisible(true)]
+    [Guid("93A56AA2-22D3-4EA1-B11B-6025934FC260")]
+    [CSDeskBandRegistration(Name = "MonBand")]
+    public class Deskband : CSDeskBandWpf
+    {
+        readonly DeskbandControl _control;
+        readonly CrossProcessSignal _signal;
+
+        public Deskband()
+        {
+            try
+            {
+                this._control = new DeskbandControl();
+                this.Content = this._control;
+
+                this.Options.MinHorizontalSize = new Size(150, 30);
+                this.Options.HorizontalSize = new Size(150, 30);
+                this.Options.MinVerticalSize = new Size(60, 150);
+                this.Options.VerticalSize = new Size(60, 150);
+                this.Options.Title = "MonBand";
+                this.Options.ShowTitle = false;
+                this.Options.IsFixed = false;
+                this.Options.HeightIncrement = 1;
+                this.Options.HeightCanChange = true;
+
+                this._signal = new CrossProcessSignal(App.ReloadEventName);
+                this.Reload();
+                this._signal.Signaled += (_, __) => this.Reload();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    ex.ToString(),
+                    "Failed to load MonBand Deskband",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        void Reload()
+        {
+            var appSettings = AppSettings.Load();
+            this.Dispatcher.Invoke(() => this._control.AppSettings = appSettings);
+        }
+
+        protected override void OnClose()
+        {
+            this._signal.Dispose();
+        }
+    }
+}

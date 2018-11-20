@@ -5,7 +5,7 @@ using OxyPlot.Series;
 
 namespace MonBand.Windows.Models
 {
-    public class BandwidthPlotModel : PlotModel
+    class BandwidthPlotModel : PlotModel
     {
         readonly byte _maxPoints;
 

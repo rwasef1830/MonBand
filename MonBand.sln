@@ -14,6 +14,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MonBand.Tests", "src\MonBan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonBand.Windows", "src\MonBand.Windows\MonBand.Windows.csproj", "{456E4154-5CDE-4E4F-BD98-BB85900E4EB3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonBand.Windows.ComHost", "src\MonBand.Windows.ComHost\MonBand.Windows.ComHost.csproj", "{B63378BF-86B2-49EE-AA32-46C302D0A296}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,6 +34,10 @@ Global
 		{456E4154-5CDE-4E4F-BD98-BB85900E4EB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{456E4154-5CDE-4E4F-BD98-BB85900E4EB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{456E4154-5CDE-4E4F-BD98-BB85900E4EB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B63378BF-86B2-49EE-AA32-46C302D0A296}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B63378BF-86B2-49EE-AA32-46C302D0A296}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B63378BF-86B2-49EE-AA32-46C302D0A296}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B63378BF-86B2-49EE-AA32-46C302D0A296}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,7 +3,7 @@ using System.Windows.Input;
 
 namespace MonBand.Windows.Infrastructure.Input
 {
-    public class DelegateCommand : ICommand
+    class DelegateCommand : ICommand
     {
         readonly Action<object> _execute;
         readonly Func<object, bool> _canExecute;

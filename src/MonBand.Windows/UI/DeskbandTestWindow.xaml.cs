@@ -4,7 +4,7 @@ using MonBand.Windows.Settings;
 
 namespace MonBand.Windows.UI
 {
-    public partial class DeskbandTestWindow
+    partial class DeskbandTestWindow
     {
         readonly CrossProcessSignal _signal;
 
