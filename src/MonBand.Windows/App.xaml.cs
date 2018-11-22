@@ -3,7 +3,6 @@ using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using MonBand.Windows.Bootstrap;
-using MonBand.Windows.Settings;
 using MonBand.Windows.UI;
 
 namespace MonBand.Windows
@@ -28,8 +27,7 @@ namespace MonBand.Windows
             }
             else
             {
-                var settings = AppSettings.Load();
-                this.MainWindow = new SettingsWindow(settings);
+                this.MainWindow = new SettingsWindow();
             }
 
             this.MainWindow.Show();

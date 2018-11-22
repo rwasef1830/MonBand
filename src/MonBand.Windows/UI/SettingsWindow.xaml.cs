@@ -29,10 +29,9 @@ namespace MonBand.Windows.UI
         public ICommand SaveAndApplyConfiguration { get; }
         public BandwidthPlotModel PlotModel { get; }
 
-        public SettingsWindow(AppSettings settings)
+        public SettingsWindow()
         {
-            if (settings == null) throw new ArgumentNullException(nameof(settings));
-
+            var settings = AppSettings.Load();
             this.SnmpPollers = new ObservableCollection<SnmpPollerConfig>(settings.SnmpPollers);
 
             this.AddMonitor = new DelegateCommand(
