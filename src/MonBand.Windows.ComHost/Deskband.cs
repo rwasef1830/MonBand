@@ -3,7 +3,9 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using CSDeskBand;
 using CSDeskBand.Wpf;
+using Microsoft.Extensions.Logging;
 using MonBand.Core.Util;
+using MonBand.Windows.Bootstrap;
 using MonBand.Windows.Settings;
 using MonBand.Windows.UI;
 using Size = CSDeskBand.Size;
@@ -15,11 +17,17 @@ namespace MonBand.Windows.ComHost
     [CSDeskBandRegistration(Name = "MonBand")]
     public class Deskband : CSDeskBandWpf
     {
+        public static readonly ILoggerFactory LoggerFactory = LoggerConfiguration.CreateLoggerFactory(
+            LogLevel.Information,
+            "Deskband");
+        readonly ILogger _log;
         readonly DeskbandControl _control;
         readonly CrossProcessSignal _signal;
 
         public Deskband()
         {
+            this._log = LoggerFactory.CreateLogger(this.GetType().Name);
+
             try
             {
                 this._control = new DeskbandControl();
@@ -41,6 +49,7 @@ namespace MonBand.Windows.ComHost
             }
             catch (Exception ex)
             {
+                this._log.LogError(ex, "MonBand initialization failed");
                 MessageBox.Show(
                     ex.ToString(),
                     "Failed to load MonBand Deskband",
