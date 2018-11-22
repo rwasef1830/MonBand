@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
@@ -65,7 +64,7 @@ namespace MonBand.Windows.UI
                         snmpPoller.InterfaceName),
                     3,
                     SystemTimeProvider.Instance,
-                    new NullLoggerFactory());
+                    App.LoggerFactory);
 
                 trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 

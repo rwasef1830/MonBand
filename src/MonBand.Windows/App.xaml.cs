@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
+using Microsoft.Extensions.Logging;
+using MonBand.Windows.Bootstrap;
 using MonBand.Windows.Settings;
 using MonBand.Windows.UI;
 
@@ -8,6 +10,10 @@ namespace MonBand.Windows
 {
     public partial class App
     {
+        public static readonly ILoggerFactory LoggerFactory = LoggerConfiguration.CreateLoggerFactory(
+            LogLevel.Information,
+            "Settings");
+
         public const string ReloadEventName = nameof(MonBand) + "-Reload";
 
         protected override void OnStartup(StartupEventArgs e)

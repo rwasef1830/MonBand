@@ -12,12 +12,6 @@ namespace MonBand.Windows.Settings
             nameof(MonBand),
             "settings.json");
 
-        public static readonly string LogFilePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            nameof(MonBand),
-            "Logs",
-            "Application.log");
-
         public IList<SnmpPollerConfig> SnmpPollers { get; set; }
 
         public AppSettings()
@@ -56,6 +50,20 @@ namespace MonBand.Windows.Settings
                 var serializer = new JsonSerializer();
                 return serializer.Deserialize<AppSettings>(jsonReader);
             }
+        }
+
+        public static string GetLogFilePath(string fileNameSuffix)
+        {
+            if (string.IsNullOrWhiteSpace(fileNameSuffix))
+            {
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(fileNameSuffix));
+            }
+
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                nameof(MonBand),
+                "Logs",
+                $"Application-{fileNameSuffix}.log");
         }
     }
 }
