@@ -4,13 +4,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:MonBand.Windows.UI"
         mc:Ignorable="d"
         Title="MonBand Deskband Test" 
         Height="75" 
         Width="300" 
         Icon="/MonBand.Windows;component/Resources/Traffic.ico">
     <Grid>
-        <local:DeskbandControl x:Name="Control" />
     </Grid>
 </Window>

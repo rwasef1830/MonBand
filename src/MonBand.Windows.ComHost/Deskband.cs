@@ -30,7 +30,7 @@ namespace MonBand.Windows.ComHost
 
             try
             {
-                this._control = new DeskbandControl();
+                this._control = new DeskbandControl(LoggerFactory);
                 this.Content = this._control;
 
                 this.Options.MinHorizontalSize = new Size(150, 30);

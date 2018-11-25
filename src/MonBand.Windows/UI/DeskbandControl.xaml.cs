@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using Microsoft.Extensions.Logging;
 using MonBand.Core;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
@@ -20,6 +21,7 @@ namespace MonBand.Windows.UI
             new PropertyMetadata { PropertyChangedCallback = AppSettingsChanged });
 
         readonly IDictionary<ITrafficRateService, CompactMonitorView> _viewsByService;
+        readonly ILoggerFactory _loggerFactory;
 
         public AppSettings AppSettings
         {
@@ -27,9 +29,10 @@ namespace MonBand.Windows.UI
             set => this.SetValue(AppSettingsProperty, value);
         }
 
-        public DeskbandControl()
+        public DeskbandControl(ILoggerFactory loggerFactory)
         {
             this._viewsByService = new Dictionary<ITrafficRateService, CompactMonitorView>();
+            this._loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             this.InitializeComponent();
         }
 
@@ -64,7 +67,7 @@ namespace MonBand.Windows.UI
                         snmpPoller.InterfaceName),
                     3,
                     SystemTimeProvider.Instance,
-                    App.LoggerFactory);
+                    this._loggerFactory);
 
                 trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 
