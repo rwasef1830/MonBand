@@ -56,6 +56,9 @@ namespace MonBand.Windows.UI
         {
             if (snmpPollers == null) throw new ArgumentNullException(nameof(snmpPollers));
 
+            this.RootGrid.Children.Clear();
+            this.RootGrid.ColumnDefinitions.Clear();
+
             for (var i = 0; i < snmpPollers.Count; i++)
             {
                 var snmpPoller = snmpPollers[i];
@@ -74,9 +77,14 @@ namespace MonBand.Windows.UI
                 var view = new CompactMonitorView { MonitorName = snmpPoller.ToString() };
                 this._viewsByService[trafficRateService] = view;
 
+                this.RootGrid.ColumnDefinitions.Add(
+                    new ColumnDefinition
+                    {
+                        Width = new GridLength(1, GridUnitType.Star)
+                    });
                 Grid.SetColumn(view, i);
-                this.RootGrid.Children.Add(view);
 
+                this.RootGrid.Children.Add(view);
                 trafficRateService.Start();
             }
         }
