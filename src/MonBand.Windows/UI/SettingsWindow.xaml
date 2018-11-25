@@ -47,7 +47,15 @@
                      BorderThickness="1">
                 <ListBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type settings:SnmpPollerConfig}">
-                        <TextBlock Text="{Binding}" />
+                        <TextBlock>
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0}:{1} - {2}">
+                                    <Binding Path="Address" />
+                                    <Binding Path="Port" />
+                                    <Binding Path="InterfaceName" />
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
