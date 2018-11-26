@@ -6,14 +6,14 @@ using MonBand.Core.Util;
 
 namespace MonBand.Core.Snmp
 {
-    public class SnmpPollingTrafficRateService : PollingTrafficRateServiceBase
+    public class SnmpTrafficRateService : PollingTrafficRateServiceBase
     {
         readonly ISnmpTrafficQuery _trafficQuery;
         readonly ITimeProvider _timeProvider;
         DateTimeOffset _previousTime;
         NetworkTraffic _previousTraffic;
 
-        public SnmpPollingTrafficRateService(
+        public SnmpTrafficRateService(
             ISnmpTrafficQuery trafficQuery,
             byte pollIntervalSeconds,
             ITimeProvider timeProvider,
@@ -24,7 +24,7 @@ namespace MonBand.Core.Snmp
             loggerFactory,
             Task.Delay) { }
 
-        internal SnmpPollingTrafficRateService(
+        internal SnmpTrafficRateService(
             ISnmpTrafficQuery trafficQuery,
             byte pollIntervalSeconds,
             ITimeProvider timeProvider,

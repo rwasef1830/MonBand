@@ -92,7 +92,7 @@ namespace MonBand.Windows.UI
             try
             {
                 var remoteEndPoint = new DnsEndPoint(config.Address, config.Port);
-                var newTrafficRateService = new SnmpPollingTrafficRateService(
+                var newTrafficRateService = new SnmpTrafficRateService(
                     new SnmpNamedInterfaceTrafficQuery(remoteEndPoint, config.Community, config.InterfaceName),
                     3,
                     SystemTimeProvider.Instance,

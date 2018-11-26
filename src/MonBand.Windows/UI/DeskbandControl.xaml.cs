@@ -63,7 +63,7 @@ namespace MonBand.Windows.UI
             {
                 var snmpPoller = snmpPollers[i];
 
-                var trafficRateService = new SnmpPollingTrafficRateService(
+                var trafficRateService = new SnmpTrafficRateService(
                     new SnmpNamedInterfaceTrafficQuery(
                         new DnsEndPoint(snmpPoller.Address, snmpPoller.Port),
                         snmpPoller.Community,
