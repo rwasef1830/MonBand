@@ -26,5 +26,7 @@ namespace MonBand.Windows.Settings
         {
             this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        public override string ToString() => this._interfaceName;
     }
 }

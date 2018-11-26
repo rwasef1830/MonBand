@@ -76,7 +76,7 @@ namespace MonBand.Windows.UI
 
                 trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 
-                var view = new CompactMonitorView { MonitorName = snmpPoller.ToString() };
+                var view = new CompactMonitorView { MonitorName = "SNMP: " + snmpPoller };
                 this._viewsByService[trafficRateService] = view;
 
                 this.RootGrid.ColumnDefinitions.Add(
@@ -103,7 +103,7 @@ namespace MonBand.Windows.UI
 
                 trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 
-                var view = new CompactMonitorView { MonitorName = performanceCounterPoller.ToString() };
+                var view = new CompactMonitorView { MonitorName = "Performance counters: " + performanceCounterPoller };
                 this._viewsByService[trafficRateService] = view;
 
                 this.RootGrid.ColumnDefinitions.Add(
