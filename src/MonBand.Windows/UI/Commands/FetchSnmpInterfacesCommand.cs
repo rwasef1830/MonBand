@@ -6,26 +6,27 @@ using System.Windows;
 using System.Windows.Input;
 using MonBand.Core.Snmp;
 using MonBand.Windows.Settings;
+using MonBand.Windows.UI.Settings;
 
 namespace MonBand.Windows.UI.Commands
 {
-    class FetchInterfacesCommand : ICommand
+    class FetchSnmpInterfacesCommand : ICommand
     {
-        readonly SettingsWindow _window;
+        readonly SnmpMonitorsControl _snmpMonitors;
 
         bool _executing;
         CancellationTokenSource _cancellationTokenSource;
 
         public event EventHandler CanExecuteChanged;
 
-        public FetchInterfacesCommand(SettingsWindow window)
+        public FetchSnmpInterfacesCommand(SnmpMonitorsControl tab)
         {
-            this._window = window ?? throw new ArgumentNullException(nameof(window));
+            this._snmpMonitors = tab ?? throw new ArgumentNullException(nameof(tab));
             this._cancellationTokenSource = new CancellationTokenSource();
 
-            window.Initialized += (_, __) =>
+            tab.Initialized += (_, __) =>
             {
-                window.ListBoxMonitors.SelectionChanged += (sender, args) =>
+                tab.ListBoxMonitors.SelectionChanged += (sender, args) =>
                 {
                     var oldCancellationTokenSource = Interlocked.Exchange(
                         ref this._cancellationTokenSource,
@@ -68,10 +69,10 @@ namespace MonBand.Windows.UI.Commands
             this._executing = true;
             this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);
 
-            this._window.TextBoxAddress.IsReadOnly = true;
-            this._window.TextBoxPort.IsReadOnly = true;
-            this._window.TextBoxCommunity.IsReadOnly = true;
-            this._window.ComboBoxInterfaceName.IsReadOnly = true;
+            this._snmpMonitors.TextBoxAddress.IsReadOnly = true;
+            this._snmpMonitors.TextBoxPort.IsReadOnly = true;
+            this._snmpMonitors.TextBoxCommunity.IsReadOnly = true;
+            this._snmpMonitors.ComboBoxInterfaceName.IsReadOnly = true;
 
             try
             {
@@ -85,7 +86,7 @@ namespace MonBand.Windows.UI.Commands
                     .GetIdsByNameAsync(cancellationTokenSource.Token)
                     .ConfigureAwait(true);
 
-                this._window.ComboBoxInterfaceName.ItemsSource = idsByName.Keys;
+                this._snmpMonitors.ComboBoxInterfaceName.ItemsSource = idsByName.Keys;
             }
             catch (OperationCanceledException)
             {
@@ -94,7 +95,7 @@ namespace MonBand.Windows.UI.Commands
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    this._window,
+                    Window.GetWindow(this._snmpMonitors),
                     $"Failed to fetch interfaces from {config.Address}:{config.Port}.\nError: {ex.Message}",
                     "Failed to fetch interfaces",
                     MessageBoxButton.OK,
@@ -103,10 +104,10 @@ namespace MonBand.Windows.UI.Commands
             }
             finally
             {
-                this._window.TextBoxAddress.IsReadOnly = false;
-                this._window.TextBoxPort.IsReadOnly = false;
-                this._window.TextBoxCommunity.IsReadOnly = false;
-                this._window.ComboBoxInterfaceName.IsReadOnly = false;
+                this._snmpMonitors.TextBoxAddress.IsReadOnly = false;
+                this._snmpMonitors.TextBoxPort.IsReadOnly = false;
+                this._snmpMonitors.TextBoxCommunity.IsReadOnly = false;
+                this._snmpMonitors.ComboBoxInterfaceName.IsReadOnly = false;
 
                 this._executing = false;
                 this.CanExecuteChanged?.Invoke(this, EventArgs.Empty);

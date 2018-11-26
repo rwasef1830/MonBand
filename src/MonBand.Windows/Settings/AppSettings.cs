@@ -13,10 +13,12 @@ namespace MonBand.Windows.Settings
             "settings.json");
 
         public IList<SnmpPollerConfig> SnmpPollers { get; set; }
+        public IList<PerformanceCounterPollerConfig> PerformanceCounterPollers { get; set; }
 
         public AppSettings()
         {
             this.SnmpPollers = new List<SnmpPollerConfig>();
+            this.PerformanceCounterPollers = new List<PerformanceCounterPollerConfig>();
         }
 
         public void Save()

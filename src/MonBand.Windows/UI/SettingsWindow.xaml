@@ -4,9 +4,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:settings="clr-namespace:MonBand.Windows.Settings"
-        xmlns:oxy="http://oxyplot.org/wpf"
-        xmlns:helpers="clr-namespace:MonBand.Windows.UI.Helpers"
+        xmlns:settings="clr-namespace:MonBand.Windows.UI.Settings"
         mc:Ignorable="d"
         x:Name="Self"
         Title="MonBand Settings"
@@ -26,135 +24,19 @@
 
         <TabControl Grid.Row="1" Padding="5" Margin="0, 0, 0, 5">
             <TabItem Header="SNMP">
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-
-                    <Button Grid.Row="0" Padding="5"
-                            Command="{Binding AddMonitor, ElementName=Self}" HorizontalAlignment="Left">
-                        <TextBlock Margin="2">
-                            <Run FontWeight="Bold">+</Run>
-                            <Run>Add new monitor</Run>
-                        </TextBlock>
-                    </Button>
-                    <Grid Grid.Row="1" VerticalAlignment="Stretch">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-
-                        <ListBox x:Name="ListBoxMonitors"
-                                 Grid.Column="0"
-                                 ItemsSource="{Binding SnmpPollers, ElementName=Self}"
-                                 BorderThickness="1">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate DataType="{x:Type settings:SnmpPollerConfig}">
-                                    <TextBlock>
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0}:{1} - {2}">
-                                                <Binding Path="Address" />
-                                                <Binding Path="Port" />
-                                                <Binding Path="InterfaceName" />
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-
-                        <Grid Grid.Column="1"
-                              DataContext="{Binding SelectedItem, ElementName=ListBoxMonitors}">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="*" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <Grid Grid.Row="0" x:Name="GridMonitorForm" Visibility="Hidden" Margin="0, 0, 0, 10">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="Auto" />
-                                    <RowDefinition Height="*" />
-                                </Grid.RowDefinitions>
-
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="100" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-
-                                <Grid.Resources>
-                                    <ResourceDictionary>
-                                        <Style TargetType="{x:Type Label}">
-                                            <Setter Property="HorizontalAlignment" Value="Right" />
-                                        </Style>
-                                        <Style TargetType="{x:Type TextBox}">
-                                            <Setter Property="VerticalContentAlignment" Value="Center" />
-                                            <Setter Property="Background" Value="White" />
-                                        </Style>
-                                    </ResourceDictionary>
-                                </Grid.Resources>
-
-                                <Label Grid.Row="0" Grid.Column="0">Address</Label>
-                                <TextBox Grid.Row="0" Grid.Column="1" Name="TextBoxAddress" Text="{Binding Address}" />
-
-                                <Label Grid.Row="1" Grid.Column="0">Port</Label>
-                                <TextBox Grid.Row="1" Grid.Column="1" Name="TextBoxPort" Text="{Binding Port}" />
-
-                                <Label Grid.Row="2" Grid.Column="0">Community</Label>
-                                <TextBox Grid.Row="2" Grid.Column="1" Name="TextBoxCommunity"
-                                         Text="{Binding Community}" />
-
-                                <Label Grid.Row="3" Grid.Column="0">Interface name</Label>
-                                <Grid Grid.Row="3" Grid.Column="1">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <ComboBox Grid.Column="0" x:Name="ComboBoxInterfaceName"
-                                              Text="{Binding InterfaceName}" IsEditable="True" />
-                                    <Button Grid.Column="1"
-                                            Padding="5, 0, 5, 0"
-                                            Margin="10, 0, 0, 0"
-                                            Command="{Binding FetchInterfaces, ElementName=Self}"
-                                            helpers:ButtonHelper.CommandParameter="{Binding}">
-                                        Fetch interfaces
-                                    </Button>
-                                </Grid>
-
-                                <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal">
-                                    <Button Margin="0, 10, 0, 0"
-                                            Padding="5"
-                                            Command="{Binding DeleteMonitor, ElementName=Self}"
-                                            helpers:ButtonHelper.CommandParameter="{Binding}">
-                                        &#215; Delete monitor
-                                    </Button>
-                                </StackPanel>
-
-                                <oxy:PlotView Grid.Row="5" Grid.ColumnSpan="2" Grid.Column="0"
-                                              Model="{Binding PlotModel}" DataContext="{x:Reference Self}" />
-                            </Grid>
-                        </Grid>
-                    </Grid>
-                </Grid>
+                <settings:SnmpMonitorsControl x:Name="SnmpMonitors" />
+            </TabItem>
+            <TabItem Header="Performance counters">
+                <settings:PerformanceCountersControl x:Name="PerformanceCounterMonitors" />
             </TabItem>
         </TabControl>
 
-
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10, 0, 0, 0" HorizontalAlignment="Right">
-            <Button Padding="10" Margin="0, 0, 5, 0"
+            <Button Padding="10, 5, 10, 5" Margin="0, 0, 5, 0"
                     Command="{Binding SaveAndApplyConfiguration, ElementName=Self}">
                 Save and apply configuration
             </Button>
-            <Button Padding="10"
+            <Button Padding="10, 5, 10, 5"
                     Command="{Binding Exit, ElementName=Self}">
                 Exit
             </Button>

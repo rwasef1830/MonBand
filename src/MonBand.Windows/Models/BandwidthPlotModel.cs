@@ -59,8 +59,13 @@ namespace MonBand.Windows.Models
             this.LegendPosition = LegendPosition.LeftTop;
             this.LegendItemSpacing = 0;
 
-            this.FillDataPoints(downloadBandwidthSeries);
-            this.FillDataPoints(uploadBandwidthSeries);
+            this.Reset();
+        }
+
+        public void Reset()
+        {
+            this.FillDataPoints(this.DownloadBandwidthSeries);
+            this.FillDataPoints(this.UploadBandwidthSeries);
         }
 
         void FillDataPoints(DataPointSeries series)

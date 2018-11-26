@@ -69,10 +69,11 @@
     <Compile Include="Logging\SerilogLogger.cs" />
     <Compile Include="Logging\SerilogLoggerProvider.cs" />
     <Compile Include="Logging\SerilogLoggerScope.cs" />
+    <Compile Include="Settings\PerformanceCounterPollerConfig.cs" />
     <Compile Include="UI\CompactMonitorView.cs" />
     <Compile Include="Infrastructure\Input\DelegateCommand.cs" />
     <Compile Include="Models\BandwidthPlotModel.cs" />
-    <Compile Include="UI\Commands\FetchInterfacesCommand.cs" />
+    <Compile Include="UI\Commands\FetchSnmpInterfacesCommand.cs" />
     <Compile Include="UI\DeskbandControl.xaml.cs">
       <DependentUpon>DeskbandControl.xaml</DependentUpon>
     </Compile>
@@ -85,6 +86,12 @@
     </Compile>
     <Compile Include="Settings\AppSettings.cs" />
     <Compile Include="Settings\SnmpPollerConfig.cs" />
+    <Compile Include="UI\Settings\PerformanceCountersControl.xaml.cs">
+      <DependentUpon>PerformanceCountersControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Settings\SnmpMonitorsControl.xaml.cs">
+      <DependentUpon>SnmpMonitorsControl.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -118,6 +125,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="UI\SettingsWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Settings\PerformanceCountersControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Settings\SnmpMonitorsControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

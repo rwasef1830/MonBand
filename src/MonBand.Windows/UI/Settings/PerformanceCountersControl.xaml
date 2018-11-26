@@ -1,0 +1,99 @@
+﻿<UserControl x:Class="MonBand.Windows.UI.Settings.PerformanceCountersControl"
+             x:ClassModifier="internal"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:settings="clr-namespace:MonBand.Windows.Settings"
+             xmlns:helpers="clr-namespace:MonBand.Windows.UI.Helpers"
+             xmlns:oxy="http://oxyplot.org/wpf"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800"
+             x:Name="Self">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Button Grid.Row="0" Padding="5"
+                            Command="{Binding AddMonitor, ElementName=Self}" HorizontalAlignment="Left">
+            <TextBlock Margin="2">
+                            <Run FontWeight="Bold">+</Run>
+                            <Run>Add new monitor</Run>
+            </TextBlock>
+        </Button>
+        <Grid Grid.Row="1" VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <ListBox x:Name="ListBoxMonitors"
+                                 Grid.Column="0"
+                                 ItemsSource="{Binding Pollers, ElementName=Self}"
+                                 BorderThickness="1"
+                                 SelectionChanged="HandleListBoxMonitorsSelectionChanged">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type settings:PerformanceCounterPollerConfig}">
+                        <TextBlock Text="{Binding InterfaceName}" />
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Grid Grid.Column="1"
+                  DataContext="{Binding SelectedItem, ElementName=ListBoxMonitors}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" x:Name="GridMonitorForm" Visibility="Hidden" Margin="0, 0, 0, 10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.Resources>
+                        <ResourceDictionary>
+                            <Style TargetType="{x:Type Label}">
+                                <Setter Property="HorizontalAlignment" Value="Right" />
+                            </Style>
+                            <Style TargetType="{x:Type TextBox}">
+                                <Setter Property="VerticalContentAlignment" Value="Center" />
+                                <Setter Property="Background" Value="White" />
+                            </Style>
+                        </ResourceDictionary>
+                    </Grid.Resources>
+
+                    <Label Grid.Row="0" Grid.Column="0">Interface</Label>
+                    <ComboBox Grid.Row="0" Grid.Column="1"
+                              ItemsSource="{Binding InterfaceNames, ElementName=Self}" 
+                              SelectedValue="{Binding InterfaceName}" />
+
+                    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
+                        <Button Margin="0, 10, 0, 0"
+                                Padding="5"
+                                Command="{Binding DeleteMonitor, ElementName=Self}"
+                                helpers:ButtonHelper.CommandParameter="{Binding}">
+                            &#215; Delete monitor
+                        </Button>
+                    </StackPanel>
+
+                    <oxy:PlotView Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="0"
+                                  Model="{Binding PlotModel}" DataContext="{x:Reference Self}" />
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>
