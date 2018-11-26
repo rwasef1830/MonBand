@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using MonBand.Core;
+using MonBand.Core.PerformanceCounters;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
 using MonBand.Windows.Settings;
@@ -49,20 +50,21 @@ namespace MonBand.Windows.UI
             self._viewsByService.Clear();
 
             var newAppSettings = (AppSettings)e.NewValue;
+
+            self.RootGrid.Children.Clear();
+            self.RootGrid.ColumnDefinitions.Clear();
+
             self.InitializeSnmpPollers(new ReadOnlyCollection<SnmpPollerConfig>(newAppSettings.SnmpPollers));
+            self.InitializePerformanceCounterPollers(
+                new ReadOnlyCollection<PerformanceCounterPollerConfig>(newAppSettings.PerformanceCounterPollers));
         }
 
         void InitializeSnmpPollers(IReadOnlyList<SnmpPollerConfig> snmpPollers)
         {
             if (snmpPollers == null) throw new ArgumentNullException(nameof(snmpPollers));
 
-            this.RootGrid.Children.Clear();
-            this.RootGrid.ColumnDefinitions.Clear();
-
-            for (var i = 0; i < snmpPollers.Count; i++)
+            foreach (var snmpPoller in snmpPollers)
             {
-                var snmpPoller = snmpPollers[i];
-
                 var trafficRateService = new SnmpTrafficRateService(
                     new SnmpNamedInterfaceTrafficQuery(
                         new DnsEndPoint(snmpPoller.Address, snmpPoller.Port),
@@ -82,7 +84,34 @@ namespace MonBand.Windows.UI
                     {
                         Width = new GridLength(1, GridUnitType.Star)
                     });
-                Grid.SetColumn(view, i);
+                Grid.SetColumn(view, this.RootGrid.Children.Count);
+
+                this.RootGrid.Children.Add(view);
+                trafficRateService.Start();
+            }
+        }
+
+        void InitializePerformanceCounterPollers(IReadOnlyList<PerformanceCounterPollerConfig> performanceCounterPollers)
+        {
+            if (performanceCounterPollers == null) throw new ArgumentNullException(nameof(performanceCounterPollers));
+
+            foreach (var performanceCounterPoller in performanceCounterPollers)
+            {
+                var trafficRateService = new PerformanceCounterTrafficRateService(
+                    performanceCounterPoller.InterfaceName,
+                    this._loggerFactory);
+
+                trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
+
+                var view = new CompactMonitorView { MonitorName = performanceCounterPoller.ToString() };
+                this._viewsByService[trafficRateService] = view;
+
+                this.RootGrid.ColumnDefinitions.Add(
+                    new ColumnDefinition
+                    {
+                        Width = new GridLength(1, GridUnitType.Star)
+                    });
+                Grid.SetColumn(view, this.RootGrid.Children.Count);
 
                 this.RootGrid.Children.Add(view);
                 trafficRateService.Start();
