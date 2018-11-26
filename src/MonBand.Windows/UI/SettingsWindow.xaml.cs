@@ -27,6 +27,7 @@ namespace MonBand.Windows.UI
         public ICommand FetchInterfaces { get; }
         public ICommand DeleteMonitor { get; }
         public ICommand SaveAndApplyConfiguration { get; }
+        public ICommand Exit { get; }
         public BandwidthPlotModel PlotModel { get; }
 
         public SettingsWindow()
@@ -54,6 +55,7 @@ namespace MonBand.Windows.UI
                     CrossProcessSignal.Signal(App.ReloadEventName);
                     this.Close();
                 });
+            this.Exit = new DelegateCommand(_ => this.Close());
 
             this.PlotModel = new BandwidthPlotModel(100);
             this.InitializeComponent();
