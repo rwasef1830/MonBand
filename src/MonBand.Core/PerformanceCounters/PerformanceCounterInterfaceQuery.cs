@@ -2,7 +2,7 @@
 
 namespace MonBand.Core.PerformanceCounters
 {
-    public static class PerformanceCounterNetworkInterfaceQuery
+    public static class PerformanceCounterInterfaceQuery
     {
         public static string[] GetInterfaceNames()
         {
