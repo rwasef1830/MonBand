@@ -13,9 +13,9 @@ using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models;
 using MonBand.Windows.Settings;
-using MonBand.Windows.UI.Commands;
+using MonBand.Windows.Standalone.UI.Commands;
 
-namespace MonBand.Windows.UI.Settings
+namespace MonBand.Windows.Standalone.UI.Settings
 {
     partial class SnmpMonitorsControl
     {

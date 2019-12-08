@@ -7,6 +7,8 @@ namespace MonBand.Windows.Settings
 {
     public class AppSettings
     {
+        public const string ReloadEventName = nameof(MonBand) + "-Reload";
+
         public static readonly string SettingsFilePath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             nameof(MonBand),
@@ -49,7 +51,7 @@ namespace MonBand.Windows.Settings
 
         public static string GetLogFilePath(string fileNameSuffix)
         {
-            if (string.IsNullOrWhiteSpace(fileNameSuffix))
+            if (String.IsNullOrWhiteSpace(fileNameSuffix))
             {
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(fileNameSuffix));
             }

@@ -44,7 +44,7 @@ namespace MonBand.Windows.ComHost
                 this.Options.HeightIncrement = 1;
                 this.Options.HeightCanChange = true;
 
-                this._signal = new CrossProcessSignal(App.ReloadEventName);
+                this._signal = new CrossProcessSignal(AppSettings.ReloadEventName);
                 this.Reload();
                 this._signal.Signaled += (_, __) => this.Reload();
             }

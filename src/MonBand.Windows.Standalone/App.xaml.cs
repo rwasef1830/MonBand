@@ -3,17 +3,16 @@ using System.Linq;
 using System.Windows;
 using Microsoft.Extensions.Logging;
 using MonBand.Windows.Bootstrap;
+using MonBand.Windows.Standalone.UI;
 using MonBand.Windows.UI;
 
-namespace MonBand.Windows
+namespace MonBand.Windows.Standalone
 {
     public partial class App
     {
         public static readonly ILoggerFactory LoggerFactory = LoggerConfiguration.CreateLoggerFactory(
             LogLevel.Information,
             "Settings");
-
-        public const string ReloadEventName = nameof(MonBand) + "-Reload";
 
         readonly ILogger _log;
 

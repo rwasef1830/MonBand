@@ -3,8 +3,9 @@ using Microsoft.Extensions.Logging;
 using MonBand.Core.Util;
 using MonBand.Windows.Bootstrap;
 using MonBand.Windows.Settings;
+using MonBand.Windows.UI;
 
-namespace MonBand.Windows.UI
+namespace MonBand.Windows.Standalone.UI
 {
     partial class DeskbandTestWindow
     {
@@ -21,7 +22,7 @@ namespace MonBand.Windows.UI
 
             this._control = new DeskbandControl(LoggerFactory);
             this.Content = this._control;
-            this._signal = new CrossProcessSignal(App.ReloadEventName);
+            this._signal = new CrossProcessSignal(AppSettings.ReloadEventName);
 
             this.Reload();
             this._signal.Signaled += (_, __) => this.Reload();
@@ -30,7 +31,7 @@ namespace MonBand.Windows.UI
         void Reload()
         {
             var appSettings = AppSettings.Load();
-            this.Dispatcher.Invoke(() => this._control.AppSettings = appSettings);
+            this.Dispatcher?.Invoke(() => this._control.AppSettings = appSettings);
         }
 
         protected override void OnClosed(EventArgs e)

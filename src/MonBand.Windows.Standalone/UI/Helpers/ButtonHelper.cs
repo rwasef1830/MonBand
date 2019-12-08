@@ -2,7 +2,7 @@
 using System.Windows;
 using System.Windows.Controls.Primitives;
 
-namespace MonBand.Windows.UI.Helpers
+namespace MonBand.Windows.Standalone.UI.Helpers
 {
     static class ButtonHelper
     {

@@ -5,7 +5,7 @@ using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Settings;
 
-namespace MonBand.Windows.UI
+namespace MonBand.Windows.Standalone.UI
 {
     partial class SettingsWindow
     {
@@ -22,7 +22,7 @@ namespace MonBand.Windows.UI
                     settings.SnmpPollers = this.SnmpMonitors.Pollers.ToList();
                     settings.PerformanceCounterPollers = this.PerformanceCounterMonitors.Pollers.ToList();
                     settings.Save();
-                    CrossProcessSignal.Signal(App.ReloadEventName);
+                    CrossProcessSignal.Signal(AppSettings.ReloadEventName);
                     this.Close();
                 });
             this.Exit = new DelegateCommand(_ => this.Close());
