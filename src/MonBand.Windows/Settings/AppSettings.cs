@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
+using System.Text.Json;
 
 namespace MonBand.Windows.Settings
 {
@@ -29,12 +29,9 @@ namespace MonBand.Windows.Settings
                 Directory.CreateDirectory(settingsDirectoryPath);
             }
 
-            using (var textWriter = File.CreateText(SettingsFilePath))
-            using (var jsonWriter = new JsonTextWriter(textWriter))
-            {
-                var serializer = new JsonSerializer { Formatting = Formatting.Indented };
-                serializer.Serialize(jsonWriter, this);
-            }
+            using var stream = File.OpenWrite(SettingsFilePath);
+            using var jsonWriter = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
+            JsonSerializer.Serialize(jsonWriter, this, this.GetType());
         }
 
         public static AppSettings Load()
@@ -46,12 +43,8 @@ namespace MonBand.Windows.Settings
                 return settings;
             }
 
-            using (var textReader = File.OpenText(SettingsFilePath))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                var serializer = new JsonSerializer();
-                return serializer.Deserialize<AppSettings>(jsonReader);
-            }
+            var fileBytes = File.ReadAllBytes(SettingsFilePath);
+            return JsonSerializer.Deserialize<AppSettings>(fileBytes);
         }
 
         public static string GetLogFilePath(string fileNameSuffix)

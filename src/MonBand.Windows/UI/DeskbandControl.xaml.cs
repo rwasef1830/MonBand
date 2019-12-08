@@ -121,7 +121,7 @@ namespace MonBand.Windows.UI
         void HandleTrafficRateUpdated(object sender, NetworkTraffic traffic)
         {
             var view = this._viewsByService[(ITrafficRateService)sender];
-            this.Dispatcher.Invoke(() => view.AddTraffic(traffic));
+            this.Dispatcher?.Invoke(() => view.AddTraffic(traffic));
         }
     }
 }

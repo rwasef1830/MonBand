@@ -52,7 +52,7 @@ namespace MonBand.Tests.Core.Snmp
             var timeProvider = new ManualTimeProvider();
 
             int i = 0;
-            using (var service = new SnmpTrafficRateService(
+            using var service = new SnmpTrafficRateService(
                 trafficQuery,
                 1,
                 timeProvider,
@@ -67,21 +67,21 @@ namespace MonBand.Tests.Core.Snmp
                     cancellationToken.ThrowIfCancellationRequested();
                     timeProvider.Advance(interval);
                     return Task.CompletedTask;
-                }))
+                });
+
+            var batchingBlock = new BatchBlock<NetworkTraffic>(2);
+            var bufferBlock = new BufferBlock<NetworkTraffic>();
+            bufferBlock.LinkTo(batchingBlock);
+
+            service.TrafficRateUpdated += (s, t) => bufferBlock.Post(t);
+            service.Start();
+
+            var trafficRates = await batchingBlock.ReceiveAsync().ConfigureAwait(true);
+
+            foreach (var trafficRate in trafficRates)
             {
-                var batchingBlock = new BatchBlock<NetworkTraffic>(2);
-                var bufferBlock = new BufferBlock<NetworkTraffic>();
-                bufferBlock.LinkTo(batchingBlock);
-
-                service.TrafficRateUpdated += (s, t) => bufferBlock.Post(t);
-                service.Start();
-
-                var trafficRates = await batchingBlock.ReceiveAsync().ConfigureAwait(true);
-                foreach (var trafficRate in trafficRates)
-                {
-                    trafficRate.InBytes.Should().Be(expectedInBytesRate);
-                    trafficRate.OutBytes.Should().Be(expectedOutBytesRate);
-                }
+                trafficRate.InBytes.Should().Be(expectedInBytesRate);
+                trafficRate.OutBytes.Should().Be(expectedOutBytesRate);
             }
         }
     }

@@ -2,13 +2,11 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using CSDeskBand;
-using CSDeskBand.Wpf;
 using Microsoft.Extensions.Logging;
 using MonBand.Core.Util;
 using MonBand.Windows.Bootstrap;
 using MonBand.Windows.Settings;
 using MonBand.Windows.UI;
-using Size = CSDeskBand.Size;
 
 namespace MonBand.Windows.ComHost
 {
@@ -24,6 +22,8 @@ namespace MonBand.Windows.ComHost
         readonly DeskbandControl _control;
         readonly CrossProcessSignal _signal;
 
+        protected override UIElement UIElement { get; }
+
         public Deskband()
         {
             this._log = LoggerFactory.CreateLogger(this.GetType().Name);
@@ -31,7 +31,8 @@ namespace MonBand.Windows.ComHost
             try
             {
                 this._control = new DeskbandControl(LoggerFactory);
-                this.Content = this._control;
+
+                this.UIElement = this._control;
 
                 this.Options.MinHorizontalSize = new Size(150, 30);
                 this.Options.HorizontalSize = new Size(150, 30);
@@ -61,10 +62,10 @@ namespace MonBand.Windows.ComHost
         void Reload()
         {
             var appSettings = AppSettings.Load();
-            this.Dispatcher.Invoke(() => this._control.AppSettings = appSettings);
+            this.UIElement.Dispatcher?.Invoke(() => this._control.AppSettings = appSettings);
         }
 
-        protected override void OnClose()
+        protected override void DeskbandOnClosed()
         {
             this._signal.Dispose();
         }

@@ -3,6 +3,8 @@
 	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=MonBand_002EWindows_002EAnnotations/@EntryIndexRemoved">True</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=MonBand_002EWindows_002EProperties/@EntryIndexedValue">False</s:Boolean>
 	<s:Boolean x:Key="/Default/CodeInspection/CodeAnnotations/NamespacesWithAnnotations/=MonBand_002EWindows_002EProperties/@EntryIndexRemoved">True</s:Boolean>
+	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/GeneratedFilesAndFolders/=456E4154_002D5CDE_002D4E4F_002DBD98_002DBB85900E4EB3_002Fd_003AUI_002Ff_003ACSDeskBand_002Ecs/@EntryIndexedValue">456E4154-5CDE-4E4F-BD98-BB85900E4EB3/d:UI/f:CSDeskBand.cs</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CSharpNaming/Abbreviations/=CS/@EntryIndexedValue">CS</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=Deskband/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=destructure/@EntryIndexedValue">True</s:Boolean>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=destructured/@EntryIndexedValue">True</s:Boolean>

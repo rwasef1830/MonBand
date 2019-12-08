@@ -26,10 +26,8 @@ namespace MonBand.Core.Util
 
         public static void Signal(string eventName)
         {
-            using (var handle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName))
-            {
-                handle.Set();
-            }
+            using var handle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+            handle.Set();
         }
 
         async Task WaitForSignal()

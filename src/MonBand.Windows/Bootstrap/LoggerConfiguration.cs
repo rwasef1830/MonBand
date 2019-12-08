@@ -1,9 +1,9 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
-using MonBand.Windows.Logging;
 using MonBand.Windows.Settings;
 using Serilog;
 using Serilog.Events;
+using Serilog.Extensions.Logging;
 
 namespace MonBand.Windows.Bootstrap
 {

@@ -12,11 +12,13 @@ namespace MonBand.Windows.Settings
             get => this._interfaceName;
             set
             {
-                if (this._interfaceName != value)
+                if (this._interfaceName == value)
                 {
-                    this._interfaceName = value;
-                    this.OnPropertyChanged();
+                    return;
                 }
+
+                this._interfaceName = value;
+                this.OnPropertyChanged();
             }
         }
 
