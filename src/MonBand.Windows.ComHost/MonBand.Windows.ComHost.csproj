@@ -1,14 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <SignAssembly>true</SignAssembly>
     <UseWPF>true</UseWPF>
+    <AssemblyOriginatorKeyFile>..\..\build\MonBand.snk</AssemblyOriginatorKeyFile>
     <EnableComHosting>true</EnableComHosting>
+    <DefineConstants>TRACE;DESKBAND_WPF</DefineConstants>
   </PropertyGroup>
-  <Import Project="..\..\build\Version.xml" />
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="3.1.0" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\MonBand.Windows\MonBand.Windows.csproj" />
   </ItemGroup>
+
 </Project>

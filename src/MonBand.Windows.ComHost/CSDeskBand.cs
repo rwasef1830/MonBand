@@ -756,7 +756,7 @@ namespace CSDeskBand
     /// Specifies registration configuration for a deskband.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
-    public sealed class CSDeskBandRegistrationAttribute : Attribute
+    internal sealed class CSDeskBandRegistrationAttribute : Attribute
     {
         /// <summary>
         /// Gets or sets the name of the deskband in the toolbar menu.

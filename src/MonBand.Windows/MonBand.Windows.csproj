@@ -4,7 +4,6 @@
     <SignAssembly>true</SignAssembly>
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>..\..\build\MonBand.snk</AssemblyOriginatorKeyFile>
-    <DefineConstants>TRACE;DESKBAND_WPF</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
