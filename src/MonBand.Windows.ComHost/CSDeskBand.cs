@@ -1531,7 +1531,9 @@ namespace CSDeskBand
         /// <returns>The name of the toolbar.</returns>
         internal static string GetToolbarName(Type t)
         {
-            return t.GetCustomAttribute<CSDeskBandRegistrationAttribute>(true)?.Name ?? t.Name;
+            return MonBand.Windows.ComHost.CSDeskBandRegistration.RegistrationsByType.TryGetValue(t, out var attribute)
+                ? attribute?.Name ?? t.Name
+                : t.Name;
         }
 
         /// <summary>
@@ -1541,7 +1543,9 @@ namespace CSDeskBand
         /// <returns>The value if it should be shown.</returns>
         internal static bool GetToolbarRequestToShow(Type t)
         {
-            return t.GetCustomAttribute<CSDeskBandRegistrationAttribute>(true)?.ShowDeskBand ?? false;
+            return MonBand.Windows.ComHost.CSDeskBandRegistration.RegistrationsByType.TryGetValue(t, out var attribute)
+                ? attribute?.ShowDeskBand ?? false
+                : false;
         }
     }
 }

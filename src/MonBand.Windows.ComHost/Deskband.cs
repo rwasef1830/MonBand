@@ -12,12 +12,12 @@ namespace MonBand.Windows.ComHost
 {
     [ComVisible(true)]
     [Guid("93A56AA2-22D3-4EA1-B11B-6025934FC260")]
-    [CSDeskBandRegistration(Name = "MonBand")]
     public class Deskband : CSDeskBandWpf
     {
         public static readonly ILoggerFactory LoggerFactory = LoggerConfiguration.CreateLoggerFactory(
             LogLevel.Information,
             "Deskband");
+
         readonly ILogger _log;
         readonly DeskbandControl _control;
         readonly CrossProcessSignal _signal;
@@ -68,6 +68,18 @@ namespace MonBand.Windows.ComHost
         protected override void DeskbandOnClosed()
         {
             this._signal.Dispose();
+        }
+
+        [ComRegisterFunction]
+        public static void Register(Type t)
+        {
+            RegistrationHelper.Register(t);
+        }
+
+        [ComUnregisterFunction]
+        public static void Unregister(Type t)
+        {
+            RegistrationHelper.Unregister(t);
         }
     }
 }
