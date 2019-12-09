@@ -1027,6 +1027,7 @@ namespace CSDeskBand
             };
 
             HwndSource = new HwndSource(hwndSourceParameters);
+            HwndSource.SizeToContent = SizeToContent.Manual;
             _rootVisual = new AdornerDecorator();
             HwndSource.RootVisual = _rootVisual;
             HwndSource.CompositionTarget.BackgroundColor = Colors.Transparent;
