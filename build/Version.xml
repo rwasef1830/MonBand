@@ -1,7 +1,9 @@
 ﻿<Project>
   <PropertyGroup>
     <VersionPrefix>0.1.0</VersionPrefix>
-    <Company>Raif Atef</Company>
+    <VersionSuffix></VersionSuffix>
+    <Company>Raif Atef Wasef</Company>
+    <Copyright>Copyright © Raif Atef Wasef 2020</Copyright>
     <Product>MonBand</Product>
   </PropertyGroup>
   
@@ -15,11 +17,13 @@
     <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
   </PropertyGroup>
   
-  <Target Name="GenerateVersionInfo" BeforeTargets="BeforeBuild">
-    <Exec Command="dotnet &quot;$([System.IO.Path]::Combine($(MSBuildThisFileDirectory), dotnet-project-version.dll))&quot; -s=git -t=cs -v=$(VersionPrefix) -m=$(VersionSuffix)" />
+  <Target Name="GenerateVersionInfo" BeforeTargets="CoreCompile">
+    <Exec Command="dotnet tool restore" />
+    <Exec Command="dotnet tool run rw-project-version -s=git -t=cs -v=$(VersionPrefix) -m=$(VersionSuffix)" />
+    
+    <ItemGroup>
+      <Compile Remove="Properties\VersionInfo.cs" />
+      <Compile Include="Properties\VersionInfo.cs" />
+    </ItemGroup>
   </Target>
-  
-  <ItemGroup>
-    <Compile Include="Properties\VersionInfo.cs" Condition="'$(EnableDefaultItems)' == 'false' OR '$(EnableDefaultItems)' == ''" />
-  </ItemGroup>
 </Project>
