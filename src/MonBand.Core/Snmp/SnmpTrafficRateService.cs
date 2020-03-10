@@ -10,6 +10,7 @@ namespace MonBand.Core.Snmp
     {
         readonly ISnmpTrafficQuery _trafficQuery;
         readonly ITimeProvider _timeProvider;
+        readonly TimeSpan _updateInterval;
         DateTimeOffset _previousTime;
         NetworkTraffic _previousTraffic;
 
@@ -30,10 +31,11 @@ namespace MonBand.Core.Snmp
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
-            pollIntervalSeconds,
+            TimeSpan.FromMilliseconds(pollIntervalSeconds),
             loggerFactory,
             delayTaskFactory)
         {
+            this._updateInterval = TimeSpan.FromSeconds(pollIntervalSeconds);
             this._trafficQuery = trafficQuery
                                  ?? throw new ArgumentNullException(nameof(trafficQuery));
             this._timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
@@ -54,7 +56,8 @@ namespace MonBand.Core.Snmp
 
             if (this._previousTime != default)
             {
-                var secondsDelta = (now - this._previousTime).TotalSeconds;
+                var timeDelta = now - this._previousTime;
+                var secondsDelta = timeDelta.TotalSeconds;
                 var receivedBytesDelta = traffic.InBytes - this._previousTraffic.InBytes;
                 var sentBytesDelta = traffic.OutBytes - this._previousTraffic.OutBytes;
 

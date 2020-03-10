@@ -19,7 +19,7 @@ namespace MonBand.Core.PerformanceCounters
             string interfaceName,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
-            1,
+            TimeSpan.FromSeconds(1),
             loggerFactory,
             delayTaskFactory)
         {

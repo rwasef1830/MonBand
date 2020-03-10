@@ -19,11 +19,16 @@ namespace MonBand.Core
         public event EventHandler<NetworkTraffic> TrafficRateUpdated;
 
         protected PollingTrafficRateServiceBase(
-            byte pollIntervalSeconds,
+            TimeSpan pollInterval,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory)
         {
-            this._pollInterval = TimeSpan.FromSeconds(pollIntervalSeconds);
+            if (pollInterval <= TimeSpan.Zero)
+            {
+                throw new ArgumentOutOfRangeException(nameof(pollInterval));
+            }
+
+            this._pollInterval = pollInterval;
             this.Log = loggerFactory?.CreateLogger(this.GetType().Name)
                         ?? throw new ArgumentNullException(nameof(loggerFactory));
             this._delayTaskFactory = delayTaskFactory ?? throw new ArgumentNullException(nameof(delayTaskFactory));
