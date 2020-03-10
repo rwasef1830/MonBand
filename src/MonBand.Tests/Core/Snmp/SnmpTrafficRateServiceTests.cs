@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
@@ -42,28 +44,38 @@ namespace MonBand.Tests.Core.Snmp
         }
 
         static async Task RunRateCalculationTestAsync(
-            NetworkTraffic[] inputTrafficReadings,
+            IReadOnlyList<NetworkTraffic> inputTrafficReadings,
             long expectedInBytesRate,
             long expectedOutBytesRate)
         {
-            var trafficQuery = A.Fake<ISnmpTrafficQuery>();
-            A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
-                .ReturnsNextFromSequence(inputTrafficReadings);
+            byte pollIntervalSeconds = 1;
+
             var timeProvider = new ManualTimeProvider();
 
-            int i = 0;
+            var sequence = new TimeTriggeredSequence<NetworkTraffic>(
+                    timeProvider,
+                    inputTrafficReadings,
+                    TimeSpan.FromSeconds(1))
+                .Select(Task.FromResult);
+            // ReSharper disable once GenericEnumeratorNotDisposed
+            var enumerator = sequence.GetEnumerator();
+
+            var trafficQuery = A.Fake<ISnmpTrafficQuery>();
+            A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
+                .ReturnsLazily(
+                    x =>
+                    {
+                        enumerator.MoveNext();
+                        return enumerator.Current;
+                    });
+
             using var service = new SnmpTrafficRateService(
                 trafficQuery,
-                1,
+                pollIntervalSeconds,
                 timeProvider,
                 new NullLoggerFactory(),
                 (interval, cancellationToken) =>
                 {
-                    if (++i >= inputTrafficReadings.Length)
-                    {
-                        throw new OperationCanceledException();
-                    }
-
                     cancellationToken.ThrowIfCancellationRequested();
                     timeProvider.Advance(interval);
                     return Task.CompletedTask;

@@ -11,6 +11,7 @@ namespace MonBand.Core.Snmp
         readonly ISnmpTrafficQuery _trafficQuery;
         readonly ITimeProvider _timeProvider;
         readonly TimeSpan _updateInterval;
+
         DateTimeOffset _previousTime;
         NetworkTraffic _previousTraffic;
 
@@ -31,7 +32,7 @@ namespace MonBand.Core.Snmp
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
-            TimeSpan.FromMilliseconds(pollIntervalSeconds),
+            TimeSpan.FromMilliseconds(pollIntervalSeconds * (double)1000 / 4),
             loggerFactory,
             delayTaskFactory)
         {
@@ -54,36 +55,45 @@ namespace MonBand.Core.Snmp
             var now = this._timeProvider.UtcNow;
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (this._previousTime != default)
+            if (this._previousTime == default)
             {
-                var timeDelta = now - this._previousTime;
-                var secondsDelta = timeDelta.TotalSeconds;
-                var receivedBytesDelta = traffic.InBytes - this._previousTraffic.InBytes;
-                var sentBytesDelta = traffic.OutBytes - this._previousTraffic.OutBytes;
-
-                if (receivedBytesDelta < 0)
-                {
-                    // Counter wrap around occurred.
-                    receivedBytesDelta += uint.MaxValue;
-                }
-
-                if (sentBytesDelta < 0)
-                {
-                    // Counter wrap around occurred.
-                    sentBytesDelta += uint.MaxValue;
-                }
-
-                var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
-                var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
-                var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
-
-                this.Log.LogDebug(
-                    "Traffic rate in bytes/sec: Received: {0} - Sent: {1}",
-                    trafficRate.InBytes,
-                    trafficRate.OutBytes);
-
-                this.OnTrafficRateUpdated(trafficRate);
+                this._previousTime = now;
+                this._previousTraffic = traffic;
+                return;
             }
+
+            var timeDelta = now - this._previousTime;
+            var secondsDelta = timeDelta.TotalSeconds;
+            var receivedBytesDelta = traffic.InBytes - this._previousTraffic.InBytes;
+            var sentBytesDelta = traffic.OutBytes - this._previousTraffic.OutBytes;
+
+            if (receivedBytesDelta < 0)
+            {
+                // Counter wrap around occurred.
+                receivedBytesDelta += uint.MaxValue;
+            }
+
+            if (sentBytesDelta < 0)
+            {
+                // Counter wrap around occurred.
+                sentBytesDelta += uint.MaxValue;
+            }
+
+            if (timeDelta < this._updateInterval)
+            {
+                return;
+            }
+
+            var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
+            var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
+            var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
+
+            this.Log.LogDebug(
+                "Traffic rate in bytes/sec: Received: {0} - Sent: {1}",
+                trafficRate.InBytes,
+                trafficRate.OutBytes);
+
+            this.OnTrafficRateUpdated(trafficRate);
 
             this._previousTime = now;
             this._previousTraffic = traffic;
