@@ -102,7 +102,7 @@ namespace MonBand.Windows.Services
             return Path.Combine(
                 SettingsRoot,
                 "Logs",
-                $"{applicationName}.log");
+                $"{applicationName}-.log");
         }
     }
 }

@@ -30,7 +30,7 @@ namespace MonBand.Windows.Bootstrap
                 .File(
                     logFilePath,
                     outputTemplate:
-                    "[{Timestamp:u} {Level:u3}] [{SourceContext}]{Scope} {Message}{NewLine}{Exception}",
+                    "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} {Level:u3}] [{SourceContext}]{Scope} {Message:lj}{NewLine}{Exception}",
                     rollingInterval: RollingInterval.Day);
 
             var logger = configuration.CreateLogger();
