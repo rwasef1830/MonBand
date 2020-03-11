@@ -44,6 +44,7 @@
                           ItemsSource="{Binding LogLevels, ElementName=Self}"
                           SelectedItem="{Binding Settings.LogLevel, ElementName=Self}" 
                           IsReadOnly="True"
+                          VerticalContentAlignment="Center"
                           x:Name="ComboBoxLoggingLevel" />
             </StackPanel>
 
