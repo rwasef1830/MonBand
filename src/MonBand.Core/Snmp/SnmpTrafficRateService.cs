@@ -44,25 +44,29 @@ namespace MonBand.Core.Snmp
 
         protected override async Task PollAsync(CancellationToken cancellationToken)
         {
+            var startTime = this._timeProvider.UtcNow;
+
             var traffic = await this._trafficQuery
                 .GetTotalTrafficBytesAsync(cancellationToken)
                 .ConfigureAwait(false);
-            this.Log.LogTrace(
-                "Traffic in bytes: Received: {0} - Sent: {1}",
-                traffic.InBytes,
-                traffic.OutBytes);
+            var queryDuration = this._timeProvider.UtcNow - startTime;
 
-            var now = this._timeProvider.UtcNow;
+            this.Log.LogTrace(
+                "Traffic in bytes: Received: {0:n0}; Sent: {1:n0}; Query duration: {2}",
+                traffic.InBytes,
+                traffic.OutBytes,
+                queryDuration);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             if (this._previousTime == default)
             {
-                this._previousTime = now;
+                this._previousTime = startTime;
                 this._previousTraffic = traffic;
                 return;
             }
 
-            var timeDelta = now - this._previousTime;
+            var timeDelta = startTime - this._previousTime;
             var secondsDelta = timeDelta.TotalSeconds;
             var receivedBytesDelta = traffic.InBytes - this._previousTraffic.InBytes;
             var sentBytesDelta = traffic.OutBytes - this._previousTraffic.OutBytes;
@@ -89,13 +93,15 @@ namespace MonBand.Core.Snmp
             var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
 
             this.Log.LogDebug(
-                "Traffic rate in bytes/sec: Received: {0} - Sent: {1}",
+                "Traffic rate in bytes/sec: Received: {0:n0}; Sent: {1:n0}; Query duration: {2}; Seconds since last update: {3:n}",
                 trafficRate.InBytes,
-                trafficRate.OutBytes);
+                trafficRate.OutBytes,
+                queryDuration,
+                secondsDelta);
 
             this.OnTrafficRateUpdated(trafficRate);
 
-            this._previousTime = now;
+            this._previousTime = startTime;
             this._previousTraffic = traffic;
         }
     }
