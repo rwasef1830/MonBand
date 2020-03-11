@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Extensions.Logging;
-using MonBand.Windows.Settings;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
 
@@ -9,19 +9,26 @@ namespace MonBand.Windows.Bootstrap
 {
     public static class LoggerConfiguration
     {
-        public static ILoggerFactory CreateLoggerFactory(LogLevel logLevel, string logFileNameSuffix)
+        public static ILoggerFactory CreateLoggerFactory(LogLevel logLevel, string logFilePath, LogLevelSignal signalOrNull)
         {
-            if (string.IsNullOrWhiteSpace(logFileNameSuffix))
+            if (string.IsNullOrWhiteSpace(logFilePath))
             {
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(logFileNameSuffix));
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(logFilePath));
+            }
+
+            var logLevelSwitch = new LoggingLevelSwitch { MinimumLevel = ConvertLevel(logLevel) };
+
+            if (signalOrNull != null)
+            {
+                signalOrNull.LoggingLevelChanged += (_, level) => logLevelSwitch.MinimumLevel = ConvertLevel(level);
             }
 
             var configuration = new Serilog.LoggerConfiguration()
-                .MinimumLevel.Is(ConvertLevel(logLevel))
+                .MinimumLevel.ControlledBy(logLevelSwitch)
                 .Enrich.FromLogContext()
                 .WriteTo
                 .File(
-                    AppSettings.GetLogFilePath(logFileNameSuffix),
+                    logFilePath,
                     outputTemplate:
                     "[{Timestamp:u} {Level:u3}] [{SourceContext}]{Scope} {Message}{NewLine}{Exception}",
                     rollingInterval: RollingInterval.Day);

@@ -7,22 +7,34 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using MonBand.Core;
 using MonBand.Core.PerformanceCounters;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models;
-using MonBand.Windows.Settings;
+using MonBand.Windows.Models.Settings;
 
 namespace MonBand.Windows.Standalone.UI.Settings
 {
     partial class PerformanceCountersControl
     {
+        public static readonly DependencyProperty LoggerFactoryProperty = DependencyProperty.Register(
+            nameof(LoggerFactory),
+            typeof(ILoggerFactory),
+            typeof(PerformanceCountersControl));
+
         public static readonly DependencyProperty PollersProperty = DependencyProperty.Register(
             nameof(Pollers),
             typeof(ObservableCollection<PerformanceCounterPollerConfig>),
             typeof(PerformanceCountersControl));
 
         ITrafficRateService _trafficRateService;
+
+        public ILoggerFactory LoggerFactory
+        {
+            get => (ILoggerFactory)this.GetValue(LoggerFactoryProperty);
+            set => this.SetValue(LoggerFactoryProperty, value);
+        }
 
         public ObservableCollection<PerformanceCounterPollerConfig> Pollers
         {
@@ -46,6 +58,15 @@ namespace MonBand.Windows.Standalone.UI.Settings
             this.InterfaceNames = PerformanceCounterInterfaceQuery.GetInterfaceNames();
 
             this.InitializeComponent();
+            this.Loaded += this.HandleLoaded;
+        }
+
+        void HandleLoaded(object sender, RoutedEventArgs e)
+        {
+            if (this.LoggerFactory == null && !DesignerProperties.GetIsInDesignMode(this))
+            {
+                throw new InvalidOperationException($"{nameof(this.LoggerFactory)} must be set.");
+            }
         }
 
         void HandleListBoxMonitorsSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -75,7 +96,7 @@ namespace MonBand.Windows.Standalone.UI.Settings
             {
                 var newTrafficRateService = new PerformanceCounterTrafficRateService(
                     config.InterfaceName,
-                    App.LoggerFactory);
+                    this.LoggerFactory);
 
                 var oldTrafficRateService = Interlocked.Exchange(
                     ref this._trafficRateService,
@@ -87,7 +108,7 @@ namespace MonBand.Windows.Standalone.UI.Settings
                 }
 
                 this.PlotModel.Reset();
-                this.Dispatcher.Invoke(() => this.PlotModel.InvalidatePlot(true));
+                this.Dispatcher?.Invoke(() => this.PlotModel.InvalidatePlot(true));
                 newTrafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
                 newTrafficRateService.Start();
             }
@@ -115,7 +136,7 @@ namespace MonBand.Windows.Standalone.UI.Settings
         {
             var megabits = traffic.AsMegabits();
             this.PlotModel.AddTraffic(megabits.InMegabits, megabits.OutMegabits);
-            this.Dispatcher.Invoke(() => this.PlotModel.InvalidatePlot(true));
+            this.Dispatcher?.Invoke(() => this.PlotModel.InvalidatePlot(true));
         }
     }
 }

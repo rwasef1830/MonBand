@@ -5,7 +5,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Input;
 using MonBand.Core.Snmp;
-using MonBand.Windows.Settings;
+using MonBand.Windows.Models.Settings;
 using MonBand.Windows.Standalone.UI.Settings;
 
 namespace MonBand.Windows.Standalone.UI.Commands

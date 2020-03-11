@@ -5,7 +5,8 @@ using CSDeskBand;
 using Microsoft.Extensions.Logging;
 using MonBand.Core.Util;
 using MonBand.Windows.Bootstrap;
-using MonBand.Windows.Settings;
+using MonBand.Windows.Models.Settings;
+using MonBand.Windows.Services;
 using MonBand.Windows.UI;
 
 namespace MonBand.Windows.ComHost
@@ -14,24 +15,32 @@ namespace MonBand.Windows.ComHost
     [Guid("93A56AA2-22D3-4EA1-B11B-6025934FC260")]
     public class Deskband : CSDeskBandWpf
     {
-        public static readonly ILoggerFactory LoggerFactory = LoggerConfiguration.CreateLoggerFactory(
-            LogLevel.Information,
-            "Deskband");
-
+        readonly AppSettingsService _appSettingsService;
+        readonly LogLevelSignal _logLevelSignal;
+        readonly ILoggerFactory _loggerFactory;
         readonly ILogger _log;
         readonly DeskbandControl _control;
-        readonly CrossProcessSignal _signal;
+        readonly CrossProcessSignal _processSignal;
 
         protected override UIElement UIElement { get; }
 
         public Deskband()
         {
-            this._log = LoggerFactory.CreateLogger(this.GetType().Name);
-
             try
             {
-                this._control = new DeskbandControl(LoggerFactory);
+                this._appSettingsService = new AppSettingsService();
 
+                this._logLevelSignal = new LogLevelSignal();
+                this._loggerFactory = LoggerConfiguration.CreateLoggerFactory(
+                    LogLevel.Information,
+                    this._appSettingsService.GetLogFilePath("Deskband"),
+                    this._logLevelSignal);
+                this._log = this._loggerFactory.CreateLogger(this.GetType().Name);
+
+                var appSettings = this._appSettingsService.LoadOrCreate<SettingsModel>();
+                this._logLevelSignal.Update(appSettings.LogLevel);
+
+                this._control = new DeskbandControl(this._loggerFactory);
                 this.UIElement = this._control;
 
                 this.Options.MinHorizontalSize = new Size(150, 30);
@@ -44,13 +53,13 @@ namespace MonBand.Windows.ComHost
                 this.Options.HeightIncrement = 1;
                 this.Options.HeightCanChange = true;
 
-                this._signal = new CrossProcessSignal(AppSettings.ReloadEventName);
+                this._processSignal = new CrossProcessSignal(IAppSettingsService.ReloadEventName);
                 this.Reload();
-                this._signal.Signaled += (_, __) => this.Reload();
+                this._control.Loaded += this.HandleControlLoaded;
             }
             catch (Exception ex)
             {
-                this._log.LogError(ex, "MonBand initialization failed");
+                this._log?.LogError(ex, "MonBand initialization failed");
                 MessageBox.Show(
                     ex.ToString(),
                     "Failed to load MonBand Deskband",
@@ -59,15 +68,37 @@ namespace MonBand.Windows.ComHost
             }
         }
 
+        async void HandleControlLoaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                while (true)
+                {
+                    await this._processSignal
+                        .WaitForSignalAsync()
+                        .ConfigureAwait(true);
+                    this.Reload();
+                }
+            }
+            catch (ObjectDisposedException) { }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                this._log.LogError(ex, "Unhandled exception in signal loop.");
+            }
+        }
+
         void Reload()
         {
-            var appSettings = AppSettings.Load();
-            this.UIElement.Dispatcher?.Invoke(() => this._control.AppSettings = appSettings);
+            var appSettings = this._appSettingsService.LoadOrCreate<SettingsModel>();
+            this._logLevelSignal.Update(appSettings.LogLevel);
+            this.UIElement.Dispatcher?.Invoke(() => this._control.Settings = appSettings);
         }
 
         protected override void DeskbandOnClosed()
         {
-            this._signal.Dispose();
+            this._processSignal.Dispose();
+            this._loggerFactory.Dispose();
         }
 
         [ComRegisterFunction]

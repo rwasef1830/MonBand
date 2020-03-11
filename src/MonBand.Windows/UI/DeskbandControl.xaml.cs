@@ -9,25 +9,25 @@ using MonBand.Core;
 using MonBand.Core.PerformanceCounters;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
-using MonBand.Windows.Settings;
+using MonBand.Windows.Models.Settings;
 
 namespace MonBand.Windows.UI
 {
     public partial class DeskbandControl
     {
-        public static readonly DependencyProperty AppSettingsProperty = DependencyProperty.Register(
-            nameof(AppSettings),
-            typeof(AppSettings),
+        public static readonly DependencyProperty SettingsProperty = DependencyProperty.Register(
+            nameof(Settings),
+            typeof(SettingsModel),
             typeof(DeskbandControl),
             new PropertyMetadata { PropertyChangedCallback = AppSettingsChanged });
 
         readonly IDictionary<ITrafficRateService, CompactMonitorView> _viewsByService;
         readonly ILoggerFactory _loggerFactory;
 
-        public AppSettings AppSettings
+        public SettingsModel Settings
         {
-            get => (AppSettings)this.GetValue(AppSettingsProperty);
-            set => this.SetValue(AppSettingsProperty, value);
+            get => (SettingsModel)this.GetValue(SettingsProperty);
+            set => this.SetValue(SettingsProperty, value);
         }
 
         public DeskbandControl(ILoggerFactory loggerFactory)
@@ -49,7 +49,7 @@ namespace MonBand.Windows.UI
 
             self._viewsByService.Clear();
 
-            var newAppSettings = (AppSettings)e.NewValue;
+            var newAppSettings = (SettingsModel)e.NewValue;
 
             self.RootGrid.Children.Clear();
             self.RootGrid.ColumnDefinitions.Clear();

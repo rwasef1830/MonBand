@@ -6,11 +6,7 @@ namespace MonBand.Core.Util
 {
     public sealed class CrossProcessSignal : IDisposable
     {
-        readonly EventWaitHandle _reloadEvent;
-        readonly CancellationTokenSource _waitCancellationSource;
-        readonly Task _reloadTask;
-
-        public event EventHandler Signaled;
+        readonly EventWaitHandle _waitHandle;
 
         public CrossProcessSignal(string eventName)
         {
@@ -19,40 +15,31 @@ namespace MonBand.Core.Util
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(eventName));
             }
 
-            this._reloadEvent = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
-            this._waitCancellationSource = new CancellationTokenSource();
-            this._reloadTask = Task.Run(this.WaitForSignal);
+            this._waitHandle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
         }
 
-        public static void Signal(string eventName)
+        public void Signal()
         {
-            using var handle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
-            handle.Set();
+            this._waitHandle.Set();
         }
 
-        async Task WaitForSignal()
+        public Task WaitForSignalAsync()
         {
-            try
-            {
-                while (true)
-                {
-                    await Task.Run(() => this._reloadEvent.WaitOne())
-                        .WithCancellation(this._waitCancellationSource.Token)
-                        .ConfigureAwait(false);
-                    this.Signaled?.Invoke(this, EventArgs.Empty);
-                }
-            }
-            catch
-            {
-                // ignore
-            }
+            var taskCompletionSource = new TaskCompletionSource<bool>();
+            var registeredWaitHandle = ThreadPool.RegisterWaitForSingleObject(
+                this._waitHandle,
+                (_, __) => taskCompletionSource.TrySetResult(true),
+                null,
+                -1,
+                true);
+            var returnTask = taskCompletionSource.Task;
+            returnTask.ContinueWith(antecedent => registeredWaitHandle.Unregister(null));
+            return returnTask;
         }
 
         public void Dispose()
         {
-            this._waitCancellationSource.Cancel();
-            this._reloadTask.GetAwaiter().GetResult();
-            this._reloadEvent.Dispose();
+            this._waitHandle.Dispose();
         }
     }
 }

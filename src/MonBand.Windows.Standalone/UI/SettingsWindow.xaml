@@ -23,22 +23,40 @@
 
         <TabControl Grid.Row="1" Padding="5" Margin="0, 0, 0, 5">
             <TabItem Header="SNMP">
-                <settings:SnmpMonitorsControl x:Name="SnmpMonitors" />
+                <settings:SnmpMonitorsControl x:Name="SnmpMonitors" 
+                                              LoggerFactory="{Binding LoggerFactory, ElementName=Self}" />
             </TabItem>
             <TabItem Header="Performance counters">
-                <settings:PerformanceCountersControl x:Name="PerformanceCounterMonitors" />
+                <settings:PerformanceCountersControl x:Name="PerformanceCounterMonitors" 
+                                                     LoggerFactory="{Binding LoggerFactory, ElementName=Self}" />
             </TabItem>
         </TabControl>
 
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10, 0, 0, 0" HorizontalAlignment="Right">
-            <Button Padding="10, 5, 10, 5" Margin="0, 0, 5, 0"
-                    Command="{Binding SaveAndApplyConfiguration, ElementName=Self}">
-                Save and apply configuration
-            </Button>
-            <Button Padding="10, 5, 10, 5"
-                    Command="{Binding Exit, ElementName=Self}">
-                Exit
-            </Button>
-        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Orientation="Horizontal">
+                <Label Content="Logging Level" Margin="0, 0, 5, 0" Target="{Binding ElementName=ComboBoxLoggingLevel}" />
+                <ComboBox Width="100" 
+                          ItemsSource="{Binding LogLevels, ElementName=Self}"
+                          SelectedItem="{Binding Settings.LogLevel, ElementName=Self}" 
+                          IsReadOnly="True"
+                          x:Name="ComboBoxLoggingLevel" />
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10, 0, 0, 0" HorizontalAlignment="Right">
+                <Button Padding="10, 5, 10, 5" Margin="0, 0, 5, 0"
+                        Command="{Binding SaveAndApplyConfigurationCommand, ElementName=Self}">
+                    Save and apply configuration
+                </Button>
+                <Button Padding="10, 5, 10, 5"
+                        Command="{Binding ExitCommand, ElementName=Self}">
+                    Exit
+                </Button>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

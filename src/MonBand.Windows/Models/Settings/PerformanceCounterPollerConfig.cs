@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace MonBand.Windows.Settings
+namespace MonBand.Windows.Models.Settings
 {
     public class PerformanceCounterPollerConfig : INotifyPropertyChanged
     {

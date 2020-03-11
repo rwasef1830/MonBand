@@ -7,18 +7,24 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using MonBand.Core;
 using MonBand.Core.Snmp;
 using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models;
-using MonBand.Windows.Settings;
+using MonBand.Windows.Models.Settings;
 using MonBand.Windows.Standalone.UI.Commands;
 
 namespace MonBand.Windows.Standalone.UI.Settings
 {
     partial class SnmpMonitorsControl
     {
+        public static readonly DependencyProperty LoggerFactoryProperty = DependencyProperty.Register(
+            nameof(LoggerFactory),
+            typeof(ILoggerFactory),
+            typeof(SnmpMonitorsControl));
+
         public static readonly DependencyProperty PollersProperty = DependencyProperty.Register(
             nameof(Pollers),
             typeof(ObservableCollection<SnmpPollerConfig>),
@@ -26,20 +32,26 @@ namespace MonBand.Windows.Standalone.UI.Settings
 
         ITrafficRateService _trafficRateService;
 
+        public ILoggerFactory LoggerFactory
+        {
+            get => (ILoggerFactory)this.GetValue(LoggerFactoryProperty);
+            set => this.SetValue(LoggerFactoryProperty, value);
+        }
+
         public ObservableCollection<SnmpPollerConfig> Pollers
         {
             get => (ObservableCollection<SnmpPollerConfig>)this.GetValue(PollersProperty);
             set => this.SetValue(PollersProperty, value);
         }
 
-        public ICommand AddMonitor { get; }
-        public ICommand FetchInterfaces { get; }
-        public ICommand DeleteMonitor { get; }
+        public ICommand AddMonitorCommand { get; }
+        public ICommand FetchInterfacesCommand { get; }
+        public ICommand DeleteMonitorCommand { get; }
         public BandwidthPlotModel PlotModel { get; }
 
         public SnmpMonitorsControl()
         {
-            this.AddMonitor = new DelegateCommand(
+            this.AddMonitorCommand = new DelegateCommand(
                 _ => this.Pollers.Add(
                     new SnmpPollerConfig
                     {
@@ -47,11 +59,20 @@ namespace MonBand.Windows.Standalone.UI.Settings
                         Port = 161,
                         Community = "public"
                     }));
-            this.FetchInterfaces = new FetchSnmpInterfacesCommand(this);
-            this.DeleteMonitor = new DelegateCommand(o => this.Pollers.Remove((SnmpPollerConfig)o));
+            this.FetchInterfacesCommand = new FetchSnmpInterfacesCommand(this);
+            this.DeleteMonitorCommand = new DelegateCommand(o => this.Pollers.Remove((SnmpPollerConfig)o));
 
             this.PlotModel = new BandwidthPlotModel(100);
             this.InitializeComponent();
+            this.Loaded += this.HandleLoaded;
+        }
+
+        void HandleLoaded(object sender, RoutedEventArgs e)
+        {
+            if (this.LoggerFactory == null && !DesignerProperties.GetIsInDesignMode(this))
+            {
+                throw new InvalidOperationException($"{nameof(this.LoggerFactory)} must be set.");
+            }
         }
 
         void HandleListBoxMonitorsSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -84,7 +105,7 @@ namespace MonBand.Windows.Standalone.UI.Settings
                     new SnmpNamedInterfaceTrafficQuery(remoteEndPoint, config.Community, config.InterfaceName),
                     3,
                     SystemTimeProvider.Instance,
-                    App.LoggerFactory);
+                    this.LoggerFactory);
 
                 var oldTrafficRateService = Interlocked.Exchange(
                     ref this._trafficRateService,
@@ -96,7 +117,7 @@ namespace MonBand.Windows.Standalone.UI.Settings
                 }
 
                 this.PlotModel.Reset();
-                this.Dispatcher.Invoke(() => this.PlotModel.InvalidatePlot(true));
+                this.Dispatcher?.Invoke(() => this.PlotModel.InvalidatePlot(true));
                 newTrafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
                 newTrafficRateService.Start();
             }
@@ -124,7 +145,7 @@ namespace MonBand.Windows.Standalone.UI.Settings
         {
             var megabits = traffic.AsMegabits();
             this.PlotModel.AddTraffic(megabits.InMegabits, megabits.OutMegabits);
-            this.Dispatcher.Invoke(() => this.PlotModel.InvalidatePlot(true));
+            this.Dispatcher?.Invoke(() => this.PlotModel.InvalidatePlot(true));
         }
     }
 }

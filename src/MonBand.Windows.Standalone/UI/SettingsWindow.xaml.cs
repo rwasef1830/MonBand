@@ -1,37 +1,60 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
+using Microsoft.Extensions.Logging;
 using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
-using MonBand.Windows.Settings;
+using MonBand.Windows.Models.Settings;
+using MonBand.Windows.Services;
 
 namespace MonBand.Windows.Standalone.UI
 {
     partial class SettingsWindow
     {
-        public ICommand SaveAndApplyConfiguration { get; }
-        public ICommand Exit { get; }
+        public ILoggerFactory LoggerFactory { get; }
+        public SettingsModel Settings { get; }
+        public IReadOnlyList<LogLevel> LogLevels { get; }
+        public ICommand SaveAndApplyConfigurationCommand { get; }
+        public ICommand ExitCommand { get; }
 
-        public SettingsWindow()
+        public SettingsWindow(
+            ILoggerFactory loggerFactory,
+            IAppSettingsService appSettingsService,
+            CrossProcessSignal processSignal)
         {
-            var settings = AppSettings.Load();
+            this.LoggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
 
-            this.SaveAndApplyConfiguration = new DelegateCommand(
+            if (appSettingsService == null)
+            {
+                throw new ArgumentNullException(nameof(appSettingsService));
+            }
+
+            if (processSignal == null)
+            {
+                throw new ArgumentNullException(nameof(processSignal));
+            }
+
+            this.Settings = appSettingsService.LoadOrCreate<SettingsModel>();
+            this.LogLevels = Enum.GetValues(typeof(LogLevel)).Cast<LogLevel>().ToList();
+
+            this.SaveAndApplyConfigurationCommand = new DelegateCommand(
                 _ =>
                 {
-                    settings.SnmpPollers = this.SnmpMonitors.Pollers.ToList();
-                    settings.PerformanceCounterPollers = this.PerformanceCounterMonitors.Pollers.ToList();
-                    settings.Save();
-                    CrossProcessSignal.Signal(AppSettings.ReloadEventName);
+                    this.Settings.SnmpPollers = this.SnmpMonitors.Pollers.ToList();
+                    this.Settings.PerformanceCounterPollers = this.PerformanceCounterMonitors.Pollers.ToList();
+                    appSettingsService.Save(this.Settings);
+                    processSignal.Signal();
                     this.Close();
                 });
-            this.Exit = new DelegateCommand(_ => this.Close());
+            this.ExitCommand = new DelegateCommand(_ => this.Close());
 
             this.InitializeComponent();
 
-            this.SnmpMonitors.Pollers = new ObservableCollection<SnmpPollerConfig>(settings.SnmpPollers);
+            this.SnmpMonitors.Pollers = new ObservableCollection<SnmpPollerConfig>(this.Settings.SnmpPollers);
             this.PerformanceCounterMonitors.Pollers =
-                new ObservableCollection<PerformanceCounterPollerConfig>(settings.PerformanceCounterPollers);
+                new ObservableCollection<PerformanceCounterPollerConfig>(this.Settings.PerformanceCounterPollers);
         }
     }
 }
