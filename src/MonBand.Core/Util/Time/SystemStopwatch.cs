@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace MonBand.Core.Util
+namespace MonBand.Core.Util.Time
 {
     public class SystemStopwatch : IStopwatch
     {

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
-using MonBand.Core.Util;
+using MonBand.Core.Util.Time;
 using MonBand.Tests.TestDoubles;
 using Xunit;
 

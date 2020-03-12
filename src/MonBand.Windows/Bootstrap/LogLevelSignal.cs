@@ -5,11 +5,11 @@ namespace MonBand.Windows.Bootstrap
 {
     public class LogLevelSignal
     {
-        public event EventHandler<LogLevel> LoggingLevelChanged;
+        public event EventHandler<LogLevel> LogLevelChanged;
 
         public void Update(LogLevel newLogLevel)
         {
-            this.LoggingLevelChanged?.Invoke(this, newLogLevel);
+            this.LogLevelChanged?.Invoke(this, newLogLevel);
         }
     }
 }

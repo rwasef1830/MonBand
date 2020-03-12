@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using MonBand.Core;
 using MonBand.Core.PerformanceCounters;
 using MonBand.Core.Snmp;
-using MonBand.Core.Util;
 using MonBand.Windows.Models.Settings;
 
 namespace MonBand.Windows.UI

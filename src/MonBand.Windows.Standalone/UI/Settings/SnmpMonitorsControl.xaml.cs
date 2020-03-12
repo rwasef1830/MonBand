@@ -10,7 +10,6 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using MonBand.Core;
 using MonBand.Core.Snmp;
-using MonBand.Core.Util;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models;
 using MonBand.Windows.Models.Settings;

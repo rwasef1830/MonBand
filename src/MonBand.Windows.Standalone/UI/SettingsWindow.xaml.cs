@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
-using MonBand.Core.Util;
+using MonBand.Core.Util.Threading;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models.Settings;
 using MonBand.Windows.Services;

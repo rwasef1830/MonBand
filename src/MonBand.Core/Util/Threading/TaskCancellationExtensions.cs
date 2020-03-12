@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MonBand.Core.Util
+namespace MonBand.Core.Util.Threading
 {
     public static class TaskCancellationExtensions
     {

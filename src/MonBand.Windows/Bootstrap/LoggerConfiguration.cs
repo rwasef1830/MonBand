@@ -20,7 +20,7 @@ namespace MonBand.Windows.Bootstrap
 
             if (signalOrNull != null)
             {
-                signalOrNull.LoggingLevelChanged += (_, level) => logLevelSwitch.MinimumLevel = ConvertLevel(level);
+                signalOrNull.LogLevelChanged += (_, level) => logLevelSwitch.MinimumLevel = ConvertLevel(level);
             }
 
             var configuration = new Serilog.LoggerConfiguration()

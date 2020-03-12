@@ -6,7 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Lextm.SharpSnmpLib;
 using Lextm.SharpSnmpLib.Messaging;
-using MonBand.Core.Util;
+using MonBand.Core.Util.Net;
+using MonBand.Core.Util.Threading;
 
 namespace MonBand.Core.Snmp
 {

@@ -1,5 +1,5 @@
 ﻿using System;
-using MonBand.Core.Util;
+using MonBand.Core.Util.Time;
 
 namespace MonBand.Tests.TestDoubles
 {

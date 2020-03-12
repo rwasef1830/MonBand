@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using MonBand.Core.Util;
+using MonBand.Core.Util.Time;
 
 namespace MonBand.Core.PerformanceCounters
 {

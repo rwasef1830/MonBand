@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 using Microsoft.Extensions.Logging;
-using MonBand.Core.Util;
+using MonBand.Core.Util.Threading;
 using MonBand.Windows.Bootstrap;
 using MonBand.Windows.Models.Settings;
 using MonBand.Windows.Services;

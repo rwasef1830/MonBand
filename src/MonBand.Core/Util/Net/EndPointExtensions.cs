@@ -3,7 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace MonBand.Core.Util
+namespace MonBand.Core.Util.Net
 {
     public static class EndPointExtensions
     {
