@@ -56,7 +56,11 @@ namespace MonBand.Windows.Standalone
                         this._logLevelSignal);
                     this._log = this._loggerFactory.CreateLogger(this.GetType().Name);
 
-                    this.MainWindow = new SettingsWindow(this._loggerFactory, appSettingsService, processSignal);
+                    this.MainWindow = new SettingsWindow(
+                        this._loggerFactory,
+                        this._logLevelSignal,
+                        appSettingsService,
+                        processSignal);
                 }
 
                 this.MainWindow.Show();

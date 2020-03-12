@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using MonBand.Core.Util.Threading;
+using MonBand.Windows.Bootstrap;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models.Settings;
 using MonBand.Windows.Services;
@@ -21,6 +22,7 @@ namespace MonBand.Windows.Standalone.UI
 
         public SettingsWindow(
             ILoggerFactory loggerFactory,
+            LogLevelSignal logLevelSignal,
             IAppSettingsService appSettingsService,
             CrossProcessSignal processSignal)
         {
@@ -37,6 +39,8 @@ namespace MonBand.Windows.Standalone.UI
             }
 
             this.Settings = appSettingsService.LoadOrCreate<SettingsModel>();
+            logLevelSignal.Update(this.Settings.LogLevel);
+
             this.LogLevels = Enum.GetValues(typeof(LogLevel)).Cast<LogLevel>().ToList();
 
             this.SaveAndApplyConfigurationCommand = new DelegateCommand(
@@ -45,6 +49,7 @@ namespace MonBand.Windows.Standalone.UI
                     this.Settings.SnmpPollers = this.SnmpMonitors.Pollers.ToList();
                     this.Settings.PerformanceCounterPollers = this.PerformanceCounterMonitors.Pollers.ToList();
                     appSettingsService.Save(this.Settings);
+                    logLevelSignal.Update(this.Settings.LogLevel);
                     processSignal.Signal();
                     this.Close();
                 });
