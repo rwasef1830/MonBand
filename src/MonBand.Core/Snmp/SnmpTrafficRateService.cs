@@ -46,6 +46,7 @@ namespace MonBand.Core.Snmp
                 .GetTotalTrafficBytesAsync(cancellationToken)
                 .ConfigureAwait(false);
             var queryDuration = this._queryStopwatch.Elapsed;
+            this._queryStopwatch.Reset();
 
             this.Log.LogTrace(
                 "Traffic in bytes: Received: {0:n0}; Sent: {1:n0}; Query duration: {2}",
