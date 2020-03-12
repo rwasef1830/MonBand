@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MonBand.Core.Util;
 
 namespace MonBand.Core
 {
@@ -10,9 +11,12 @@ namespace MonBand.Core
         readonly TimeSpan _pollInterval;
         readonly Func<TimeSpan, CancellationToken, Task> _delayTaskFactory;
         readonly CancellationTokenSource _cancellationTokenSource;
+        readonly IStopwatch _pollStopwatch;
         readonly object _startStopLocker = new object();
         bool _disposed;
         Task _pollLoop;
+
+        protected ITimeProvider TimeProvider { get; }
 
         protected ILogger Log { get; }
 
@@ -20,6 +24,7 @@ namespace MonBand.Core
 
         protected PollingTrafficRateServiceBase(
             TimeSpan pollInterval,
+            ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory)
         {
@@ -28,11 +33,14 @@ namespace MonBand.Core
                 throw new ArgumentOutOfRangeException(nameof(pollInterval));
             }
 
-            this._pollInterval = pollInterval;
+            this.TimeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
             this.Log = loggerFactory?.CreateLogger(this.GetType().Name)
-                        ?? throw new ArgumentNullException(nameof(loggerFactory));
+                       ?? throw new ArgumentNullException(nameof(loggerFactory));
+
+            this._pollInterval = pollInterval;
             this._delayTaskFactory = delayTaskFactory ?? throw new ArgumentNullException(nameof(delayTaskFactory));
             this._cancellationTokenSource = new CancellationTokenSource();
+            this._pollStopwatch = timeProvider.CreateStopwatch();
         }
 
         public void Start()
@@ -51,12 +59,32 @@ namespace MonBand.Core
         async Task DoPollLoop()
         {
             var cancellationToken = this._cancellationTokenSource.Token;
+            var cyclesPassed = 1;
 
             while (!cancellationToken.IsCancellationRequested)
             {
+                var delayInterval = this._pollInterval;
                 try
                 {
-                    await this.PollAsync(cancellationToken).ConfigureAwait(false);
+                    this._pollStopwatch.Start();
+                    var timeSinceLastPoll = delayInterval * cyclesPassed;
+
+                    await this.PollAsync(timeSinceLastPoll, cancellationToken).ConfigureAwait(false);
+                    var timeTaken = this._pollStopwatch.Elapsed;
+                    this._pollStopwatch.Reset();
+
+                    delayInterval -= timeTaken;
+                    if (delayInterval > TimeSpan.Zero)
+                    {
+                        cyclesPassed = 1;
+                        continue;
+                    }
+
+                    while (delayInterval <= TimeSpan.Zero)
+                    {
+                        delayInterval += this._pollInterval;
+                        cyclesPassed++;
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -68,12 +96,12 @@ namespace MonBand.Core
                 }
                 finally
                 {
-                    await this._delayTaskFactory(this._pollInterval, cancellationToken).ConfigureAwait(false);
+                    await this._delayTaskFactory(delayInterval, cancellationToken).ConfigureAwait(false);
                 }
             }
         }
 
-        protected abstract Task PollAsync(CancellationToken cancellationToken);
+        protected abstract Task PollAsync(TimeSpan timeSinceLastPoll, CancellationToken cancellationToken);
 
         protected void OnTrafficRateUpdated(NetworkTraffic traffic)
         {

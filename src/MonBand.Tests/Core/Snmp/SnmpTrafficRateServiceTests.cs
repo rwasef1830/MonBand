@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,30 +43,17 @@ namespace MonBand.Tests.Core.Snmp
         }
 
         static async Task RunRateCalculationTestAsync(
-            IReadOnlyList<NetworkTraffic> inputTrafficReadings,
+            NetworkTraffic[] inputTrafficReadings,
             long expectedInBytesRate,
             long expectedOutBytesRate)
         {
             byte pollIntervalSeconds = 1;
 
-            var timeProvider = new ManualTimeProvider();
-
-            var sequence = new TimeTriggeredSequence<NetworkTraffic>(
-                    timeProvider,
-                    inputTrafficReadings,
-                    TimeSpan.FromSeconds(1))
-                .Select(Task.FromResult);
-            // ReSharper disable once GenericEnumeratorNotDisposed
-            var enumerator = sequence.GetEnumerator();
+            var timeProvider = new MockTimeProvider();
 
             var trafficQuery = A.Fake<ISnmpTrafficQuery>();
             A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
-                .ReturnsLazily(
-                    x =>
-                    {
-                        enumerator.MoveNext();
-                        return enumerator.Current;
-                    });
+                .ReturnsNextFromSequence(inputTrafficReadings);
 
             using var service = new SnmpTrafficRateService(
                 trafficQuery,

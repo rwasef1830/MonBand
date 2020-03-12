@@ -104,7 +104,6 @@ namespace MonBand.Windows.Standalone.UI.Settings
                 var newTrafficRateService = new SnmpTrafficRateService(
                     new SnmpNamedInterfaceTrafficQuery(remoteEndPoint, config.Community, config.InterfaceName),
                     3,
-                    SystemTimeProvider.Instance,
                     this.LoggerFactory);
 
                 var oldTrafficRateService = Interlocked.Exchange(

@@ -9,5 +9,7 @@ namespace MonBand.Core.Util
         SystemTimeProvider() { }
 
         public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+
+        public IStopwatch CreateStopwatch() => new SystemStopwatch();
     }
 }

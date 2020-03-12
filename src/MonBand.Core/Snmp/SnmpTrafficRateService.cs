@@ -9,20 +9,17 @@ namespace MonBand.Core.Snmp
     public class SnmpTrafficRateService : PollingTrafficRateServiceBase
     {
         readonly ISnmpTrafficQuery _trafficQuery;
-        readonly ITimeProvider _timeProvider;
-        readonly TimeSpan _updateInterval;
+        readonly IStopwatch _queryStopwatch;
 
-        DateTimeOffset _previousTime;
-        NetworkTraffic _previousTraffic;
+        NetworkTraffic? _previousTraffic;
 
         public SnmpTrafficRateService(
             ISnmpTrafficQuery trafficQuery,
             byte pollIntervalSeconds,
-            ITimeProvider timeProvider,
             ILoggerFactory loggerFactory) : this(
             trafficQuery,
             pollIntervalSeconds,
-            timeProvider,
+            SystemTimeProvider.Instance,
             loggerFactory,
             Task.Delay) { }
 
@@ -32,24 +29,23 @@ namespace MonBand.Core.Snmp
             ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
-            TimeSpan.FromMilliseconds(pollIntervalSeconds * (double)1000 / 4),
+            TimeSpan.FromSeconds(pollIntervalSeconds),
+            timeProvider,
             loggerFactory,
             delayTaskFactory)
         {
-            this._updateInterval = TimeSpan.FromSeconds(pollIntervalSeconds);
             this._trafficQuery = trafficQuery
                                  ?? throw new ArgumentNullException(nameof(trafficQuery));
-            this._timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+            this._queryStopwatch = timeProvider.CreateStopwatch();
         }
 
-        protected override async Task PollAsync(CancellationToken cancellationToken)
+        protected override async Task PollAsync(TimeSpan timeSinceLastPoll, CancellationToken cancellationToken)
         {
-            var startTime = this._timeProvider.UtcNow;
-
+            this._queryStopwatch.Start();
             var traffic = await this._trafficQuery
                 .GetTotalTrafficBytesAsync(cancellationToken)
                 .ConfigureAwait(false);
-            var queryDuration = this._timeProvider.UtcNow - startTime;
+            var queryDuration = this._queryStopwatch.Elapsed;
 
             this.Log.LogTrace(
                 "Traffic in bytes: Received: {0:n0}; Sent: {1:n0}; Query duration: {2}",
@@ -59,17 +55,15 @@ namespace MonBand.Core.Snmp
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (this._previousTime == default)
+            if (!this._previousTraffic.HasValue)
             {
-                this._previousTime = startTime;
                 this._previousTraffic = traffic;
                 return;
             }
 
-            var timeDelta = startTime - this._previousTime;
-            var secondsDelta = timeDelta.TotalSeconds;
-            var receivedBytesDelta = traffic.InBytes - this._previousTraffic.InBytes;
-            var sentBytesDelta = traffic.OutBytes - this._previousTraffic.OutBytes;
+            var secondsDelta = timeSinceLastPoll.TotalSeconds;
+            var receivedBytesDelta = traffic.InBytes - this._previousTraffic.Value.InBytes;
+            var sentBytesDelta = traffic.OutBytes - this._previousTraffic.Value.OutBytes;
 
             if (receivedBytesDelta < 0)
             {
@@ -81,11 +75,6 @@ namespace MonBand.Core.Snmp
             {
                 // Counter wrap around occurred.
                 sentBytesDelta += uint.MaxValue;
-            }
-
-            if (timeDelta < this._updateInterval)
-            {
-                return;
             }
 
             var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
@@ -101,7 +90,6 @@ namespace MonBand.Core.Snmp
 
             this.OnTrafficRateUpdated(trafficRate);
 
-            this._previousTime = startTime;
             this._previousTraffic = traffic;
         }
     }

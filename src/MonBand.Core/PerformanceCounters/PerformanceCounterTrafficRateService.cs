@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using MonBand.Core.Util;
 
 namespace MonBand.Core.PerformanceCounters
 {
@@ -13,13 +14,19 @@ namespace MonBand.Core.PerformanceCounters
 
         public PerformanceCounterTrafficRateService(
             string interfaceName,
-            ILoggerFactory loggerFactory) : this(interfaceName, loggerFactory, Task.Delay) { }
+            ILoggerFactory loggerFactory) : this(
+            interfaceName,
+            SystemTimeProvider.Instance,
+            loggerFactory,
+            Task.Delay) { }
 
         internal PerformanceCounterTrafficRateService(
             string interfaceName,
+            ITimeProvider timeProvider,
             ILoggerFactory loggerFactory,
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
             TimeSpan.FromSeconds(1),
+            timeProvider,
             loggerFactory,
             delayTaskFactory)
         {
@@ -39,7 +46,7 @@ namespace MonBand.Core.PerformanceCounters
                 interfaceName);
         }
 
-        protected override Task PollAsync(CancellationToken cancellationToken)
+        protected override Task PollAsync(TimeSpan timeSinceLastPoll, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var inBytes = (long)this._bytesReceivedCounter.NextValue();

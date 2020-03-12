@@ -71,7 +71,6 @@ namespace MonBand.Windows.UI
                         snmpPoller.Community,
                         snmpPoller.InterfaceName),
                     3,
-                    SystemTimeProvider.Instance,
                     this._loggerFactory);
 
                 trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
