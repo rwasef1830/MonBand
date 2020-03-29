@@ -59,32 +59,45 @@ namespace MonBand.Core
         async Task DoPollLoop()
         {
             var cancellationToken = this._cancellationTokenSource.Token;
-            var cyclesPassed = 1;
+            var cycleCount = 1;
+            var isFirstLoop = true;
+            var delayInterval = TimeSpan.Zero;
+
+            this._pollStopwatch.Start();
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                var delayInterval = this._pollInterval;
                 try
                 {
-                    this._pollStopwatch.Start();
-                    var timeSinceLastPoll = delayInterval * cyclesPassed;
+                    var representedTime = this._pollInterval * cycleCount;
+                    await this.PollAsync(representedTime, cancellationToken).ConfigureAwait(false);
+                    var loopExecutionTime = this._pollStopwatch.Elapsed;
+                    this._pollStopwatch.Restart();
 
-                    await this.PollAsync(timeSinceLastPoll, cancellationToken).ConfigureAwait(false);
-                    var timeTaken = this._pollStopwatch.Elapsed;
-                    this._pollStopwatch.Reset();
-
-                    delayInterval -= timeTaken;
-                    if (delayInterval > TimeSpan.Zero)
+                    if (isFirstLoop)
                     {
-                        cyclesPassed = 1;
-                        continue;
+                        isFirstLoop = false;
+                    }
+                    else
+                    {
+                        loopExecutionTime -= delayInterval;
                     }
 
-                    while (delayInterval <= TimeSpan.Zero)
+                    var nextDelayInterval = this._pollInterval - loopExecutionTime;
+                    if (nextDelayInterval > TimeSpan.Zero)
                     {
-                        delayInterval += this._pollInterval;
-                        cyclesPassed++;
+                        cycleCount = 1;
                     }
+                    else
+                    {
+                        while (nextDelayInterval <= TimeSpan.Zero)
+                        {
+                            nextDelayInterval += this._pollInterval;
+                            cycleCount++;
+                        }
+                    }
+
+                    delayInterval = nextDelayInterval;
                 }
                 catch (OperationCanceledException)
                 {
