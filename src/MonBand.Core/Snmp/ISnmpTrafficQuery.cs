@@ -5,6 +5,7 @@ namespace MonBand.Core.Snmp
 {
     public interface ISnmpTrafficQuery
     {
-        Task<NetworkTraffic> GetTotalTrafficBytesAsync(CancellationToken cancellationToken);
+        string InterfaceId { get; }
+        Task<NetworkTraffic?> GetTotalTrafficBytesAsync(CancellationToken cancellationToken);
     }
 }

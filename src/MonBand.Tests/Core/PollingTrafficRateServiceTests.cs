@@ -97,24 +97,30 @@ namespace MonBand.Tests.Core
 
         class TestPollingTrafficRateService : PollingTrafficRateServiceBase
         {
-            readonly Func<TimeSpan, CancellationToken, Task> _pollAsyncMethod;
+            readonly Func<TimeSpan, CancellationToken, Task> _calculateRateAsyncMethod;
 
             public TestPollingTrafficRateService(
                 TimeSpan pollInterval,
                 ITimeProvider timeProvider,
-                Func<TimeSpan, CancellationToken, Task> pollAsyncMethod,
+                Func<TimeSpan, CancellationToken, Task> calculateRateAsyncMethod,
                 Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
                 pollInterval,
                 timeProvider,
                 new NullLoggerFactory(),
                 delayTaskFactory)
             {
-                this._pollAsyncMethod = pollAsyncMethod ?? throw new ArgumentNullException(nameof(pollAsyncMethod));
+                this._calculateRateAsyncMethod = calculateRateAsyncMethod
+                                                 ?? throw new ArgumentNullException(nameof(calculateRateAsyncMethod));
             }
 
-            protected sealed override Task PollAsync(TimeSpan timeSinceLastPoll, CancellationToken cancellationToken)
+            protected override Task PollAsync(CancellationToken cancellationToken)
             {
-                return this._pollAsyncMethod(timeSinceLastPoll, cancellationToken);
+                return Task.CompletedTask;
+            }
+
+            protected override Task CalculateRateAsync(TimeSpan pollInterval, CancellationToken cancellationToken)
+            {
+                return this._calculateRateAsyncMethod(pollInterval, cancellationToken);
             }
         }
     }

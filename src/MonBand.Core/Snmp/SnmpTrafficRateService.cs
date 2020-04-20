@@ -9,8 +9,8 @@ namespace MonBand.Core.Snmp
     public class SnmpTrafficRateService : PollingTrafficRateServiceBase
     {
         readonly ISnmpTrafficQuery _trafficQuery;
-        readonly IStopwatch _queryStopwatch;
 
+        NetworkTraffic? _currentTraffic;
         NetworkTraffic? _previousTraffic;
 
         public SnmpTrafficRateService(
@@ -34,64 +34,71 @@ namespace MonBand.Core.Snmp
             loggerFactory,
             delayTaskFactory)
         {
-            this._trafficQuery = trafficQuery
-                                 ?? throw new ArgumentNullException(nameof(trafficQuery));
-            this._queryStopwatch = timeProvider.CreateStopwatch();
+            this._trafficQuery = trafficQuery ?? throw new ArgumentNullException(nameof(trafficQuery));
         }
 
-        protected override async Task PollAsync(TimeSpan timeSinceLastPoll, CancellationToken cancellationToken)
+        protected override async Task PollAsync(CancellationToken cancellationToken)
         {
-            this._queryStopwatch.Start();
             var traffic = await this._trafficQuery
                 .GetTotalTrafficBytesAsync(cancellationToken)
                 .ConfigureAwait(false);
-            var queryDuration = this._queryStopwatch.Elapsed;
-            this._queryStopwatch.Reset();
 
-            this.Log.LogTrace(
-                "Traffic in bytes: Received: {0:n0}; Sent: {1:n0}; Query duration: {2}",
-                traffic.InBytes,
-                traffic.OutBytes,
-                queryDuration);
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (!this._previousTraffic.HasValue)
+            if (traffic == null)
             {
-                this._previousTraffic = traffic;
+                this.Log.LogError("Failed to get traffic for interface {0}", this._trafficQuery.InterfaceId);
                 return;
             }
 
-            var secondsDelta = timeSinceLastPoll.TotalSeconds;
-            var receivedBytesDelta = traffic.InBytes - this._previousTraffic.Value.InBytes;
-            var sentBytesDelta = traffic.OutBytes - this._previousTraffic.Value.OutBytes;
+            this.Log.LogTrace(
+                "Traffic in bytes: Received: {0:n0}; Sent: {1:n0}",
+                traffic.Value.InBytes,
+                traffic.Value.OutBytes);
 
-            if (receivedBytesDelta < 0)
+            cancellationToken.ThrowIfCancellationRequested();
+
+            this._currentTraffic = traffic;
+        }
+
+        protected override Task CalculateRateAsync(TimeSpan pollInterval, CancellationToken cancellationToken)
+        {
+            if (!this._currentTraffic.HasValue)
             {
-                // Counter wrap around occurred.
-                receivedBytesDelta += uint.MaxValue;
+                throw new InvalidOperationException("BUG: Current traffic should have a value.");
             }
 
-            if (sentBytesDelta < 0)
+            if (this._previousTraffic.HasValue)
             {
-                // Counter wrap around occurred.
-                sentBytesDelta += uint.MaxValue;
+                var secondsDelta = pollInterval.TotalSeconds;
+                var receivedBytesDelta = this._currentTraffic.Value.InBytes - this._previousTraffic.Value.InBytes;
+                var sentBytesDelta = this._currentTraffic.Value.OutBytes - this._previousTraffic.Value.OutBytes;
+
+                if (receivedBytesDelta < 0)
+                {
+                    // Counter wrap around occurred.
+                    receivedBytesDelta += uint.MaxValue;
+                }
+
+                if (sentBytesDelta < 0)
+                {
+                    // Counter wrap around occurred.
+                    sentBytesDelta += uint.MaxValue;
+                }
+
+                var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
+                var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
+                var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
+
+                this.Log.LogDebug(
+                    "Traffic rate in bytes/sec: Received: {0:n0}; Sent: {1:n0}; Seconds since last update: {3:n}",
+                    trafficRate.InBytes,
+                    trafficRate.OutBytes,
+                    secondsDelta);
+
+                this.OnTrafficRateUpdated(trafficRate);
             }
 
-            var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
-            var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
-            var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
-
-            this.Log.LogDebug(
-                "Traffic rate in bytes/sec: Received: {0:n0}; Sent: {1:n0}; Query duration: {2}; Seconds since last update: {3:n}",
-                trafficRate.InBytes,
-                trafficRate.OutBytes,
-                queryDuration,
-                secondsDelta);
-
-            this.OnTrafficRateUpdated(trafficRate);
-
-            this._previousTraffic = traffic;
+            this._previousTraffic = this._currentTraffic;
+            return Task.CompletedTask;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace MonBand.Tests.Core.Snmp
         [Fact]
         public async Task Service_calculates_rate()
         {
-            var trafficReadings = new[]
+            var trafficReadings = new NetworkTraffic?[]
             {
                 new NetworkTraffic(100, 50),
                 new NetworkTraffic(200, 100),
@@ -29,7 +29,7 @@ namespace MonBand.Tests.Core.Snmp
         [Fact]
         public async Task Service_calculates_rate_with_counter_wraparound()
         {
-            var trafficReadings = new[]
+            var trafficReadings = new NetworkTraffic?[]
             {
                 new NetworkTraffic(uint.MaxValue - 100, uint.MaxValue - 50),
                 new NetworkTraffic(uint.MaxValue, uint.MaxValue),
@@ -41,7 +41,7 @@ namespace MonBand.Tests.Core.Snmp
         }
 
         static async Task RunRateCalculationTestAsync(
-            NetworkTraffic[] inputTrafficReadings,
+            NetworkTraffic?[] inputTrafficReadings,
             long expectedInBytesRate,
             long expectedOutBytesRate)
         {

@@ -46,7 +46,12 @@ namespace MonBand.Core.PerformanceCounters
                 interfaceName);
         }
 
-        protected override Task PollAsync(TimeSpan timeSinceLastPoll, CancellationToken cancellationToken)
+        protected override Task PollAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        protected override Task CalculateRateAsync(TimeSpan pollInterval, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var inBytes = (long)this._bytesReceivedCounter.NextValue();
