@@ -9,6 +9,8 @@ namespace MonBand.Core.Snmp
     public class SnmpTrafficRateService : PollingTrafficRateServiceBase
     {
         readonly ISnmpTrafficQuery _trafficQuery;
+        readonly SnmpTrafficRateValueFilter _downloadRateFilter;
+        readonly SnmpTrafficRateValueFilter _uploadRateFilter;
 
         NetworkTraffic? _currentTraffic;
         NetworkTraffic? _previousTraffic;
@@ -35,6 +37,8 @@ namespace MonBand.Core.Snmp
             delayTaskFactory)
         {
             this._trafficQuery = trafficQuery ?? throw new ArgumentNullException(nameof(trafficQuery));
+            this._downloadRateFilter = new SnmpTrafficRateValueFilter();
+            this._uploadRateFilter = new SnmpTrafficRateValueFilter();
         }
 
         protected override async Task PollAsync(CancellationToken cancellationToken)
@@ -86,10 +90,30 @@ namespace MonBand.Core.Snmp
 
                 var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
                 var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
+
+                var filteredReceivedBytesPerSecond = (long)this._downloadRateFilter.FilterValue(receivedBytesPerSecond);
+                var filteredSentBytesPerSecond = (long)this._uploadRateFilter.FilterValue(sentBytesPerSecond);
+
+                if (filteredReceivedBytesPerSecond != receivedBytesPerSecond)
+                {
+                    this.Log.LogWarning(
+                        "Ignoring download rate spike: {0:n}",
+                        receivedBytesPerSecond);
+                    receivedBytesPerSecond = filteredReceivedBytesPerSecond;
+                }
+
+                if (filteredSentBytesPerSecond != sentBytesPerSecond)
+                {
+                    this.Log.LogWarning(
+                        "Ignoring upload rate spike: {0:n}",
+                        sentBytesPerSecond);
+                    sentBytesPerSecond = filteredSentBytesPerSecond;
+                }
+
                 var trafficRate = new NetworkTraffic(receivedBytesPerSecond, sentBytesPerSecond);
 
                 this.Log.LogDebug(
-                    "Traffic rate in bytes/sec: Received: {0:n0}; Sent: {1:n0}; Seconds since last update: {3:n}",
+                    "Traffic rate in bytes/sec: Received: {0:n0}; Sent: {1:n0}; Seconds since last update: {2:n}",
                     trafficRate.InBytes,
                     trafficRate.OutBytes,
                     secondsDelta);
