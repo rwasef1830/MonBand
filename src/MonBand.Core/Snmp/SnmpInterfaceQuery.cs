@@ -46,13 +46,15 @@ namespace MonBand.Core.Snmp
                 .WithCancellation(cancellationToken)
                 .ConfigureAwait(false);
 
-            return variables.ToDictionary(
-                x => x.Data.ToString(),
-                x =>
-                {
-                    var oidString = x.Id.ToString();
-                    return int.Parse(oidString.Substring(oidString.LastIndexOf('.') + 1));
-                });
+            return variables
+                .Where(x => !(x.Data is NoSuchInstance) && !(x.Data is NoSuchObject))
+                .ToDictionary(
+                    x => x.Data.ToString(),
+                    x =>
+                    {
+                        var oidString = x.Id.ToString();
+                        return int.Parse(oidString.Substring(oidString.LastIndexOf('.') + 1));
+                    });
         }
     }
 }

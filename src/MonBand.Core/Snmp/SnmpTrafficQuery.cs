@@ -60,6 +60,11 @@ namespace MonBand.Core.Snmp
 
             foreach (var variable in result)
             {
+                if (variable.Data is NoSuchInstance || variable.Data is NoSuchObject)
+                {
+                    return null;
+                }
+
                 if (variable.Id.ToString() == this._receivedOctetsOid)
                 {
                     totalReceivedBytes = ((Counter32)variable.Data).ToUInt32();
