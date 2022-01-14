@@ -1,6 +1,7 @@
 ﻿using System;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 
 namespace MonBand.Windows.Models
@@ -53,11 +54,15 @@ namespace MonBand.Windows.Models
             this.Axes.Add(downloadBandwidthAxis);
             this.Axes.Add(uploadBandwidthAxis);
 
-            this.LegendMargin = 0;
-            this.LegendFontSize = 10;
-            this.LegendPlacement = LegendPlacement.Inside;
-            this.LegendPosition = LegendPosition.LeftTop;
-            this.LegendItemSpacing = 0;
+            var primaryLegend = new Legend
+            {
+                LegendMargin = 0,
+                LegendFontSize = 10,
+                LegendPlacement = LegendPlacement.Inside,
+                LegendPosition = LegendPosition.LeftTop,
+                LegendItemSpacing = 0
+            };
+            this.Legends.Add(primaryLegend);
 
             this.Reset();
         }
