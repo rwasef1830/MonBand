@@ -1,9 +1,8 @@
-﻿using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using MonBand.Core.Util.Models;
 
 namespace MonBand.Windows.Models.Settings
 {
-    public class SnmpPollerConfig : INotifyPropertyChanged
+    public class SnmpPollerConfig : ObservableModelBase
     {
         string _address;
         ushort _port;
@@ -13,62 +12,27 @@ namespace MonBand.Windows.Models.Settings
         public string Address
         {
             get => this._address;
-            set
-            {
-                if (this._address != value)
-                {
-                    this._address = value;
-                    this.OnPropertyChanged();
-                }
-            }
+            set => this.Set(ref this._address, value);
         }
 
         public ushort Port
         {
             get => this._port;
-            set
-            {
-                if (this._port != value)
-                {
-                    this._port = value;
-                    this.OnPropertyChanged();
-                }
-            }
+            set => this.Set(ref this._port, value);
         }
 
         public string Community
         {
             get => this._community;
-            set
-            {
-                if (this._community != value)
-                {
-                    this._community = value;
-                    this.OnPropertyChanged();
-                }
-            }
+            set => this.Set(ref this._community, value);
         }
 
         public string InterfaceName
         {
             get => this._interfaceName;
-            set
-            {
-                if (this._interfaceName != value)
-                {
-                    this._interfaceName = value;
-                    this.OnPropertyChanged();
-                }
-            }
+            set => this.Set(ref this._interfaceName, value);
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
+        
         public override string ToString()
         {
             return $"{this.Address}:{this.Port} - {this.InterfaceName}";

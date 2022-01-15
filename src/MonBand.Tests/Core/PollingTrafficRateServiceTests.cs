@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using JetBrains.Annotations;
 using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
 using MonBand.Core.Util.Time;
@@ -13,6 +14,7 @@ using Xunit;
 
 namespace MonBand.Tests.Core
 {
+    [UsedImplicitly]
     public class PollingTrafficRateServiceTests
     {
         [SuppressMessage("ReSharper", "InconsistentNaming")]

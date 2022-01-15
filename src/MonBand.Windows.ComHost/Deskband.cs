@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-using CSDeskBand;
 using Microsoft.Extensions.Logging;
 using MonBand.Core.Util.Threading;
 using MonBand.Windows.Bootstrap;
