@@ -1,9 +1,9 @@
 ﻿<Project>
   <PropertyGroup>
-    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionPrefix>0.3.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Company>Raif Atef Wasef</Company>
-    <Copyright>Copyright © Raif Atef Wasef 2020</Copyright>
+    <Copyright>Copyright © Raif Atef Wasef 2022</Copyright>
     <Product>MonBand</Product>
   </PropertyGroup>
   
