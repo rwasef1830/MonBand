@@ -8,6 +8,7 @@ public class SnmpPollerConfig : ObservableModelBase
     ushort _port;
     string _community = string.Empty;
     string _interfaceName = string.Empty;
+    uint _pollIntervalSeconds = 3;
 
     public string Address
     {
@@ -31,6 +32,12 @@ public class SnmpPollerConfig : ObservableModelBase
     {
         get => this._interfaceName;
         set => this.Set(ref this._interfaceName, value);
+    }
+
+    public uint PollIntervalSeconds
+    {
+        get => this._pollIntervalSeconds;
+        set => this.Set(ref this._pollIntervalSeconds, value);
     }
         
     public override string ToString()

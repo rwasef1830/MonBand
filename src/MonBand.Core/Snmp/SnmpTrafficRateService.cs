@@ -17,7 +17,7 @@ public class SnmpTrafficRateService : PollingTrafficRateServiceBase
 
     public SnmpTrafficRateService(
         ISnmpTrafficQuery trafficQuery,
-        byte pollIntervalSeconds,
+        uint pollIntervalSeconds,
         ILoggerFactory loggerFactory) : this(
         trafficQuery,
         pollIntervalSeconds,
@@ -27,7 +27,7 @@ public class SnmpTrafficRateService : PollingTrafficRateServiceBase
 
     internal SnmpTrafficRateService(
         ISnmpTrafficQuery trafficQuery,
-        byte pollIntervalSeconds,
+        uint pollIntervalSeconds,
         ITimeProvider timeProvider,
         ILoggerFactory loggerFactory,
         Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
@@ -37,8 +37,8 @@ public class SnmpTrafficRateService : PollingTrafficRateServiceBase
         delayTaskFactory)
     {
         this._trafficQuery = trafficQuery ?? throw new ArgumentNullException(nameof(trafficQuery));
-        this._downloadRateFilter = new SnmpTrafficRateValueFilter();
-        this._uploadRateFilter = new SnmpTrafficRateValueFilter();
+        this._downloadRateFilter = new SnmpTrafficRateValueFilter(pollIntervalSeconds);
+        this._uploadRateFilter = new SnmpTrafficRateValueFilter(pollIntervalSeconds);
     }
 
     protected override async Task PollAsync(CancellationToken cancellationToken)

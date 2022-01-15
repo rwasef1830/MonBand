@@ -107,7 +107,7 @@ partial class SnmpMonitorsControl
             var remoteEndPoint = new DnsEndPoint(config.Address, config.Port);
             var newTrafficRateService = new SnmpTrafficRateService(
                 new SnmpNamedInterfaceTrafficQuery(remoteEndPoint, config.Community, config.InterfaceName),
-                3,
+                config.PollIntervalSeconds,
                 this.LoggerFactory);
 
             var oldTrafficRateService = Interlocked.Exchange(

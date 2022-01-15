@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         x:Name="Self"
         Title="MonBand Settings"
-        Height="450"
+        Height="550"
         Width="700"
         MinHeight="450"
         MinWidth="700"
