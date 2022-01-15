@@ -7,9 +7,9 @@ using System.Windows;
 using System.Windows.Controls;
 using Microsoft.Extensions.Logging;
 using MonBand.Core;
-using MonBand.Core.PerformanceCounters;
 using MonBand.Core.Snmp;
 using MonBand.Windows.Models.Settings;
+using MonBand.Windows.PerformanceCounters;
 
 namespace MonBand.Windows.UI;
 

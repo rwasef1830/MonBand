@@ -11,10 +11,10 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
-using MonBand.Core.PerformanceCounters;
 using MonBand.Windows.Infrastructure.Input;
 using MonBand.Windows.Models;
 using MonBand.Windows.Models.Settings;
+using MonBand.Windows.PerformanceCounters;
 
 namespace MonBand.Windows.Standalone.UI.Settings;
 

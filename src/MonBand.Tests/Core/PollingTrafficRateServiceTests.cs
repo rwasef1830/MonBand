@@ -109,7 +109,7 @@ public class PollingTrafficRateServiceTests
             Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
             pollInterval,
             timeProvider,
-            new NullLoggerFactory(),
+            NullLoggerFactory.Instance,
             delayTaskFactory)
         {
             this._calculateRateAsyncMethod = calculateRateAsyncMethod
