@@ -2,10 +2,9 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MonBand.Core.Snmp
+namespace MonBand.Core.Snmp;
+
+public interface ISnmpInterfaceQuery
 {
-    public interface ISnmpInterfaceQuery
-    {
-        Task<IDictionary<string, int>> GetIdsByNameAsync(CancellationToken cancellationToken);
-    }
+    Task<IDictionary<string, int>> GetIdsByNameAsync(CancellationToken cancellationToken);
 }

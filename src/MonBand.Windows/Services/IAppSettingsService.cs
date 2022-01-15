@@ -24,13 +24,15 @@
 
 #endregion
 
-namespace MonBand.Windows.Services
+using JetBrains.Annotations;
+
+namespace MonBand.Windows.Services;
+
+[PublicAPI]
+public interface IAppSettingsService
 {
-    public interface IAppSettingsService
-    {
-        public const string ReloadEventName = nameof(MonBand) + "-Reload";
-        void Save<TSettings>(TSettings settings);
-        TSettings LoadOrCreate<TSettings>() where TSettings : new();
-        string GetLogFilePath(string applicationName);
-    }
+    public const string ReloadEventName = nameof(MonBand) + "-Reload";
+    void Save<TSettings>(TSettings settings);
+    TSettings LoadOrCreate<TSettings>() where TSettings : new();
+    string GetLogFilePath(string applicationName);
 }

@@ -1,10 +1,11 @@
 ﻿using System;
+using JetBrains.Annotations;
 
-namespace MonBand.Core
+namespace MonBand.Core;
+
+[PublicAPI]
+public interface ITrafficRateService : IDisposable
 {
-    public interface ITrafficRateService : IDisposable
-    {
-        event EventHandler<NetworkTraffic> TrafficRateUpdated;
-        void Start();
-    }
+    event EventHandler<NetworkTraffic> TrafficRateUpdated;
+    void Start();
 }

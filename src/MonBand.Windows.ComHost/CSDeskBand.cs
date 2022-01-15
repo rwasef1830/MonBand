@@ -21,7 +21,7 @@ sealed class CSDeskBandImpl : ICSDeskBand
     readonly Dictionary<uint, DeskBandMenuAction> _contextMenuActions = new();
 
     IntPtr _parentWindowHandle;
-    object _parentSite; // Has these interfaces: IInputObjectSite, IOleWindow, IOleCommandTarget, IBandSite
+    object? _parentSite; // Has these interfaces: IInputObjectSite, IOleWindow, IOleCommandTarget, IBandSite
     uint _id;
     uint _menuStartId;
 
@@ -38,7 +38,7 @@ sealed class CSDeskBandImpl : ICSDeskBand
     /// <summary>
     /// Occurs when the deskband is closed.
     /// </summary>
-    internal event EventHandler Closed;
+    internal event EventHandler? Closed;
 
     /// <summary>
     /// Gets the <see cref="CSDeskBandOptions"/>.
@@ -175,7 +175,7 @@ sealed class CSDeskBandImpl : ICSDeskBand
         return HRESULT.S_OK;
     }
 
-    public int SetSite([In, MarshalAs(UnmanagedType.IUnknown)] object pUnkSite)
+    public int SetSite([In, MarshalAs(UnmanagedType.IUnknown)] object? pUnkSite)
     {
         // Let gc release old site
         this._parentSite = null;
@@ -191,7 +191,7 @@ sealed class CSDeskBandImpl : ICSDeskBand
         {
             var oleWindow = (IOleWindow)pUnkSite;
             oleWindow.GetWindow(out this._parentWindowHandle);
-            User32.SetParent(this._provider.Handle, this._parentWindowHandle);
+            var _ = User32.SetParent(this._provider.Handle, this._parentWindowHandle);
 
             this._parentSite = (IInputObjectSite)pUnkSite;
             return HRESULT.S_OK;
@@ -204,13 +204,14 @@ sealed class CSDeskBandImpl : ICSDeskBand
 
     public int GetSite(ref Guid riid, [MarshalAs(UnmanagedType.IUnknown)] out IntPtr ppvSite)
     {
-        if (this._parentSite == null)
+        if (this._parentSite != null)
         {
-            ppvSite = IntPtr.Zero;
-            return HRESULT.E_FAIL;
+            return Marshal.QueryInterface(Marshal.GetIUnknownForObject(this._parentSite), ref riid, out ppvSite);
         }
 
-        return Marshal.QueryInterface(Marshal.GetIUnknownForObject(this._parentSite), ref riid, out ppvSite);
+        ppvSite = IntPtr.Zero;
+        return HRESULT.E_FAIL;
+
     }
 
     public int QueryContextMenu(IntPtr hMenu, uint indexMenu, uint idCmdFirst, uint idCmdLast,
@@ -306,8 +307,8 @@ sealed class CSDeskBandImpl : ICSDeskBand
     
     public void CloseDeskBand()
     {
-        var bandSite = (IBandSite)this._parentSite;
-        bandSite.RemoveBand(this._id);
+        var bandSite = (IBandSite?)this._parentSite;
+        bandSite?.RemoveBand(this._id);
     }
 
     public int UIActivateIO(int fActivate, ref MSG msg)
@@ -337,7 +338,7 @@ sealed class CSDeskBandImpl : ICSDeskBand
         (this._parentSite as IInputObjectSite)?.OnFocusChangeIS(this, focused ? 1 : 0);
     }
 
-    void Options_PropertyChanged(object sender, PropertyChangedEventArgs e)
+    void Options_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (this._parentSite == null)
         {
@@ -405,13 +406,13 @@ public sealed class CSDeskBandOptions : ObservableModelBase
     public CSDeskBandOptions()
     {
         // Initialize in constructor to hook up property change events
-        this.HorizontalSize = new DeskBandSize(200, TaskbarHorizontalHeightLarge);
-        this.MaxHorizontalHeight = NoLimit;
-        this.MinHorizontalSize = new DeskBandSize(NoLimit, NoLimit);
+        this._horizontalSize = new DeskBandSize(200, TaskbarHorizontalHeightLarge);
+        this._maxHorizontalHeight = NoLimit;
+        this._minHorizontalSize = new DeskBandSize(NoLimit, NoLimit);
 
-        this.VerticalSize = new DeskBandSize(TaskbarVerticalWidth, 200);
-        this.MaxVerticalWidth = NoLimit;
-        this.MinVerticalSize = new DeskBandSize(NoLimit, NoLimit);
+        this._verticalSize = new DeskBandSize(TaskbarVerticalWidth, 200);
+        this._maxVerticalWidth = NoLimit;
+        this._minVerticalSize = new DeskBandSize(NoLimit, NoLimit);
     }
 
     /// <summary>
@@ -458,7 +459,7 @@ public sealed class CSDeskBandOptions : ObservableModelBase
     public string Title
     {
         get => this._title;
-        set => this.Set(ref this._title, value ?? string.Empty);
+        set => this.Set(ref this._title, value);
     }
 
     /// <summary>
@@ -573,7 +574,7 @@ sealed class CSDeskBandRegistrationAttribute : Attribute
     /// <value>
     /// The name is used to select the deskband from the toolbars menu.
     /// </value>
-    public string Name { get; init; }
+    public string? Name { get; init; }
 
     /// <summary>
     /// Gets or sets a value indicating whether to automatically show the deskband after registration.
@@ -590,6 +591,7 @@ sealed class CSDeskBandRegistrationAttribute : Attribute
 /// </summary>
 [SuppressMessage("ReSharper", "UnusedAutoPropertyAccessor.Global")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
+[PublicAPI]
 public abstract class CSDeskBandWpf : ICSDeskBand, IDeskBandProvider
 {
     readonly CSDeskBandImpl _impl;
@@ -603,7 +605,7 @@ public abstract class CSDeskBandWpf : ICSDeskBand, IDeskBandProvider
         {
             TreatAsInputRoot = true,
             WindowStyle = unchecked((int)(WindowStyles.WS_VISIBLE | WindowStyles.WS_POPUP)),
-            HwndSourceHook = this.HwndSourceHook,
+            HwndSourceHook = this.HwndSourceHook
         };
 
         this.HwndSource = new HwndSource(hwndSourceParameters);
@@ -677,7 +679,7 @@ public abstract class CSDeskBandWpf : ICSDeskBand, IDeskBandProvider
     /// <summary>
     /// Gets main UI element for the deskband.
     /// </summary>
-    protected abstract UIElement UIElement { get; }
+    protected abstract UIElement? UIElement { get; }
 
     /// <summary>
     /// Gets the options for this deskband.
@@ -922,10 +924,10 @@ static class RegistrationHelper
         try
         {
             var registryKey = Registry.ClassesRoot.CreateSubKey($@"CLSID\{guid}");
-            registryKey!.SetValue(null, GetToolbarName(t));
+            registryKey.SetValue(null, GetToolbarName(t));
 
             var subKey = registryKey.CreateSubKey("Implemented Categories");
-            subKey!.CreateSubKey(ComponentCategoryManager.CATID_DESKBAND.ToString("B"));
+            subKey.CreateSubKey(ComponentCategoryManager.CATID_DESKBAND.ToString("B"));
 
             Console.WriteLine($"Successfully registered deskband `{GetToolbarName(t)}` - GUID: {guid}");
 
@@ -937,7 +939,7 @@ static class RegistrationHelper
             Console.WriteLine("Request to show deskband.");
 
             // https://www.pinvoke.net/default.aspx/Interfaces.ITrayDeskband
-            ITrayDeskband csDeskband = null;
+            ITrayDeskband? csDeskband = null;
             try
             {
                 var trayDeskbandType = Type.GetTypeFromCLSID(new Guid("E6442437-6C68-4f52-94DD-2CFED267EFB9"));
@@ -947,7 +949,7 @@ static class RegistrationHelper
                 }
                 
                 var deskbandGuid = t.GUID;
-                csDeskband = (ITrayDeskband)Activator.CreateInstance(trayDeskbandType);
+                csDeskband = (ITrayDeskband?)Activator.CreateInstance(trayDeskbandType);
                 if (csDeskband == null)
                 {
                     return;
@@ -962,7 +964,7 @@ static class RegistrationHelper
 
                 if (csDeskband.ShowDeskBand(ref deskbandGuid) != HRESULT.S_OK)
                 {
-                    Console.WriteLine($"Error while trying to show deskband.");
+                    Console.WriteLine("Error while trying to show deskband.");
                 }
 
                 if (csDeskband.DeskBandRegistrationChanged() == HRESULT.S_OK)
@@ -1013,7 +1015,7 @@ static class RegistrationHelper
     internal static string GetToolbarName(Type t)
     {
         return CSDeskBandRegistration.RegistrationsByType.TryGetValue(t, out var attribute)
-            ? attribute?.Name ?? t.Name
+            ? attribute.Name ?? t.Name
             : t.Name;
     }
 
@@ -1024,8 +1026,7 @@ static class RegistrationHelper
     /// <returns>The value if it should be shown.</returns>
     internal static bool ShowDeskbandAfterRegistration(Type t)
     {
-        return CSDeskBandRegistration.RegistrationsByType.TryGetValue(t, out var attribute)
-               && (attribute?.ShowDeskBand ?? false);
+        return CSDeskBandRegistration.RegistrationsByType.TryGetValue(t, out var attribute) && attribute.ShowDeskBand;
     }
 }
 
@@ -1054,14 +1055,15 @@ public sealed class TaskbarInfo
 
     internal TaskbarInfo()
     {
+        this._size = new DeskBandSize(0, 0);
         this.UpdateInfo();
     }
 
-    public event EventHandler<TaskbarOrientationChangedEventArgs> TaskbarOrientationChanged;
+    public event EventHandler<TaskbarOrientationChangedEventArgs>? TaskbarOrientationChanged;
 
-    public event EventHandler<TaskbarEdgeChangedEventArgs> TaskbarEdgeChanged;
+    public event EventHandler<TaskbarEdgeChangedEventArgs>? TaskbarEdgeChanged;
 
-    public event EventHandler<TaskbarSizeChangedEventArgs> TaskbarSizeChanged;
+    public event EventHandler<TaskbarSizeChangedEventArgs>? TaskbarSizeChanged;
 
     public TaskbarOrientation Orientation
     {
@@ -1458,6 +1460,7 @@ public interface ITrayDeskband
 }
 
 [SuppressMessage("ReSharper", "IdentifierTypo")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 static class User32
 {
     [DllImport("user32.dll", SetLastError = true)]
@@ -1492,7 +1495,7 @@ static class User32
     }
 }
 
-class Shell32
+static class Shell32
 {
     [DllImport("shell32.dll")]
     public static extern IntPtr SHAppBarMessage(APPBARMESSAGE dwMessage, [In] ref APPBARDATA pData);
@@ -1507,7 +1510,7 @@ enum tagDESKBANDCID
     DBID_SHOWONLY = 1,
     DBID_MAXIMIZEBAND = 2,
     DBID_PUSHCHEVRON = 3
-};
+}
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [PublicAPI]
@@ -1548,7 +1551,7 @@ public enum QueryContextMenuFlags : uint
     CMF_OPTIMIZEFORINVOKE = 0x00000800,
     CMF_SYNCCASCADEMENU = 0x00001000,
     CMF_DONOTPICKDEFAULT = 0x00002000,
-    CMF_RESERVED = 0xffff0000,
+    CMF_RESERVED = 0xffff0000
 }
 
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
@@ -1600,6 +1603,7 @@ public struct MSG
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
+[SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
 struct MENUITEMINFO
 {
     public int cbSize;
@@ -1640,7 +1644,7 @@ struct MENUITEMINFO
         MFT_RIGHTJUSTIFY = 0x00004000,
         MFT_RIGHTORDER = 0x00002000,
         MFT_SEPARATOR = 0x00000800,
-        MFT_STRING = 0x00000000,
+        MFT_STRING = 0x00000000
     }
 
     [Flags]
@@ -1653,7 +1657,7 @@ struct MENUITEMINFO
         MFS_GRAYED = 0x00000003,
         MFS_HILITE = 0x00000080,
         MFS_UNCHECKED = 0x00000000,
-        MFS_UNHILITE = 0x00000000,
+        MFS_UNHILITE = 0x00000000
     }
 }
 
@@ -1787,7 +1791,7 @@ struct CMINVOKECOMMANDINFOEX
         CMIC_MASK_PTINVOKE = 0x20000000,
         CMIC_MASK_CONTROL_DOWN = 0x40000000,
         CMIC_MASK_FLAG_LOG_USAGE = 0x04000000,
-        CMIC_MASK_NOZONECHECKS = 0x00800000,
+        CMIC_MASK_NOZONECHECKS = 0x00800000
     }
 }
 
@@ -1801,13 +1805,14 @@ public class CMINVOKECOMMANDINFO
     public CMIC fMask;
     public IntPtr hwnd;
     public IntPtr lpVerb;
-    [MarshalAs(UnmanagedType.LPStr)] public string lpParameters;
-    [MarshalAs(UnmanagedType.LPStr)] public string lpDirectory;
+    [MarshalAs(UnmanagedType.LPStr)] public string? lpParameters;
+    [MarshalAs(UnmanagedType.LPStr)] public string? lpDirectory;
     public int nShow;
     public int dwHotKey;
     public IntPtr hIcon;
 
     [Flags]
+    [PublicAPI]
     public enum CMIC
     {
         CMIC_MASK_HOTKEY = 0x00000020,
@@ -1819,7 +1824,7 @@ public class CMINVOKECOMMANDINFO
         CMIC_MASK_SHIFT_DOWN = 0x10000000,
         CMIC_MASK_CONTROL_DOWN = 0x40000000,
         CMIC_MASK_FLAG_LOG_USAGE = 0x04000000,
-        CMIC_MASK_NOZONECHECKS = 0x00800000,
+        CMIC_MASK_NOZONECHECKS = 0x00800000
     }
 }
 
@@ -1833,7 +1838,7 @@ class CATEGORYINFO
     public uint lcidl;
 
     [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 128)]
-    public string szDescription;
+    public string? szDescription;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -1851,7 +1856,7 @@ struct BANDSITEINFO
     public enum BSIM : uint
     {
         BSIM_STATE = 0x00000001,
-        BSIM_STYLE = 0x00000002,
+        BSIM_STYLE = 0x00000002
     }
 
     [Flags]
@@ -1860,7 +1865,7 @@ struct BANDSITEINFO
     {
         BSSF_VISIBLE = 0x00000001,
         BSSF_NOTITLE = 0x00000002,
-        BSSF_UNDELETEABLE = 0x00001000,
+        BSSF_UNDELETEABLE = 0x00001000
     }
 
     [Flags]
@@ -1878,7 +1883,7 @@ struct BANDSITEINFO
         BSIS_PREFERNOLINEBREAK = 0x00000080,
         BSIS_LOCKED = 0x00000100,
         BSIS_PRESERVEORDERDURINGLAYOUT = 0x00000200,
-        BSIS_FIXEDORDER = 0x00000400,
+        BSIS_FIXEDORDER = 0x00000400
     }
 }
 
@@ -1899,7 +1904,7 @@ enum APPBARMESSAGE : uint
     ABM_WINDOWPOSCHANGED = 0x00000009,
     ABM_SETSTATE = 0x0000000A,
     ABM_GETAUTOHIDEBAREX = 0x0000000B,
-    ABM_SETAUTOHIDEBAREX = 0x0000000C,
+    ABM_SETAUTOHIDEBAREX = 0x0000000C
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -1924,7 +1929,7 @@ class ComponentCategoryManager
     public static readonly Guid CATID_DESKBAND = new("00021492-0000-0000-C000-000000000046");
 
     static readonly Guid _componentCategoryManager = new("0002e005-0000-0000-c000-000000000046");
-    static readonly ICatRegister _catRegister;
+    static readonly ICatRegister? _catRegister;
     Guid _classId;
 
     static ComponentCategoryManager()
@@ -1945,12 +1950,12 @@ class ComponentCategoryManager
 
     public void RegisterCategories(Guid[] categoryIds)
     {
-        _catRegister.RegisterClassImplCategories(ref this._classId, (uint)categoryIds.Length, categoryIds);
+        _catRegister?.RegisterClassImplCategories(ref this._classId, (uint)categoryIds.Length, categoryIds);
     }
 
     public void UnRegisterCategories(Guid[] categoryIds)
     {
-        _catRegister.UnRegisterClassImplCategories(ref this._classId, (uint)categoryIds.Length, categoryIds);
+        _catRegister?.UnRegisterClassImplCategories(ref this._classId, (uint)categoryIds.Length, categoryIds);
     }
 }
 
@@ -1989,6 +1994,7 @@ interface ICatRegister
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "IdentifierTypo")]
 [PublicAPI]
+[SuppressMessage("Design", "CA1069:Enums values should not be duplicated")]
 enum WindowStyles : uint
 {
     WS_BORDER = 0x800000,
@@ -2020,7 +2026,7 @@ enum WindowStyles : uint
 [PublicAPI]
 enum WindowMessages
 {
-    WM_NCHITTEST = 0x0084,
+    WM_NCHITTEST = 0x0084
 }
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
@@ -2029,7 +2035,7 @@ enum WindowMessages
 enum HitTestMessageResults
 {
     HTCLIENT = 1,
-    HTTRANSPARENT = -1,
+    HTTRANSPARENT = -1
 }
 
 public abstract class DeskBandMenuItem
@@ -2047,11 +2053,11 @@ sealed class DeskBandMenuSeparator : DeskBandMenuItem
     internal override void AddToMenu(IntPtr menu, uint itemPosition, ref uint itemId,
         Dictionary<uint, DeskBandMenuAction> callbacksByItemId)
     {
-        this._menuiteminfo = new MENUITEMINFO()
+        this._menuiteminfo = new MENUITEMINFO
         {
             cbSize = Marshal.SizeOf<MENUITEMINFO>(),
             fMask = MENUITEMINFO.MIIM.MIIM_TYPE,
-            fType = MENUITEMINFO.MFT.MFT_SEPARATOR,
+            fType = MENUITEMINFO.MFT.MFT_SEPARATOR
         };
 
         User32.InsertMenuItem(menu, itemPosition, true, ref this._menuiteminfo);
@@ -2070,7 +2076,7 @@ sealed class DeskBandMenuAction : DeskBandMenuItem
         this.Text = text;
     }
 
-    public event EventHandler Clicked;
+    public event EventHandler? Clicked;
 
     public bool Checked { get; set; }
 
@@ -2086,14 +2092,14 @@ sealed class DeskBandMenuAction : DeskBandMenuItem
     internal override void AddToMenu(IntPtr menu, uint itemPosition, ref uint itemId,
         Dictionary<uint, DeskBandMenuAction> callbacksByItemId)
     {
-        this._menuiteminfo = new MENUITEMINFO()
+        this._menuiteminfo = new MENUITEMINFO
         {
             cbSize = Marshal.SizeOf<MENUITEMINFO>(),
             fMask = MENUITEMINFO.MIIM.MIIM_TYPE | MENUITEMINFO.MIIM.MIIM_STATE | MENUITEMINFO.MIIM.MIIM_ID,
             fType = MENUITEMINFO.MFT.MFT_STRING,
             dwTypeData = this.Text,
             cch = (uint)this.Text.Length,
-            wID = itemId++,
+            wID = itemId++
         };
 
         this._menuiteminfo.fState |= this.Enabled ? MENUITEMINFO.MFS.MFS_ENABLED : MENUITEMINFO.MFS.MFS_DISABLED;
@@ -2116,7 +2122,7 @@ sealed class DeskBandMenu : DeskBandMenuItem
     IntPtr _menu;
     MENUITEMINFO _menuiteminfo;
     
-    public DeskBandMenu(string text, IEnumerable<DeskBandMenuItem> items = null)
+    public DeskBandMenu(string text, IEnumerable<DeskBandMenuItem>? items = null)
     {
         this.Text = text;
         if (items == null)
@@ -2153,7 +2159,7 @@ sealed class DeskBandMenu : DeskBandMenuItem
             item.AddToMenu(this._menu, index++, ref itemId, callbacksByItemId);
         }
 
-        this._menuiteminfo = new MENUITEMINFO()
+        this._menuiteminfo = new MENUITEMINFO
         {
             cbSize = Marshal.SizeOf<MENUITEMINFO>(),
             fMask = MENUITEMINFO.MIIM.MIIM_SUBMENU | MENUITEMINFO.MIIM.MIIM_STRING | MENUITEMINFO.MIIM.MIIM_STATE,
@@ -2161,7 +2167,7 @@ sealed class DeskBandMenu : DeskBandMenuItem
             fState = this.Enabled ? MENUITEMINFO.MFS.MFS_ENABLED : MENUITEMINFO.MFS.MFS_DISABLED,
             dwTypeData = this.Text,
             cch = (uint)this.Text.Length,
-            hSubMenu = this._menu,
+            hSubMenu = this._menu
         };
 
         User32.InsertMenuItem(menu, itemPosition, true, ref this._menuiteminfo);

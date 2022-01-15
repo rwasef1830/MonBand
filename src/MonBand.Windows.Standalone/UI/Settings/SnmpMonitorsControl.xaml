@@ -54,7 +54,8 @@
             </ListBox>
 
             <Grid Grid.Column="1"
-                  DataContext="{Binding SelectedItem, ElementName=ListBoxMonitors}">
+                  DataContext="{Binding SelectedItem, ElementName=ListBoxMonitors}"
+                  d:DataContext="{d:DesignInstance Type=settings:SnmpPollerConfig}">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />

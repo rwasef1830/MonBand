@@ -6,7 +6,7 @@
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>..\..\build\MonBand.snk</AssemblyOriginatorKeyFile>
     <EnableComHosting>true</EnableComHosting>
-    <DefineConstants>TRACE;DESKBAND_WPF</DefineConstants>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

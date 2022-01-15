@@ -1,13 +1,12 @@
 ﻿using System.Diagnostics;
 
-namespace MonBand.Core.PerformanceCounters
+namespace MonBand.Core.PerformanceCounters;
+
+public static class PerformanceCounterInterfaceQuery
 {
-    public static class PerformanceCounterInterfaceQuery
+    public static string[] GetInterfaceNames()
     {
-        public static string[] GetInterfaceNames()
-        {
-            var category = new PerformanceCounterCategory("Network Interface");
-            return category.GetInstanceNames();
-        }
+        var category = new PerformanceCounterCategory("Network Interface");
+        return category.GetInstanceNames();
     }
 }

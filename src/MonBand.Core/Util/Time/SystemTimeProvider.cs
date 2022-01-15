@@ -1,15 +1,14 @@
 ﻿using System;
 
-namespace MonBand.Core.Util.Time
+namespace MonBand.Core.Util.Time;
+
+public class SystemTimeProvider : ITimeProvider
 {
-    public class SystemTimeProvider : ITimeProvider
-    {
-        public static readonly ITimeProvider Instance = new SystemTimeProvider();
+    public static readonly ITimeProvider Instance = new SystemTimeProvider();
 
-        SystemTimeProvider() { }
+    SystemTimeProvider() { }
 
-        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
+    public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
 
-        public IStopwatch CreateStopwatch() => new SystemStopwatch();
-    }
+    public IStopwatch CreateStopwatch() => new SystemStopwatch();
 }

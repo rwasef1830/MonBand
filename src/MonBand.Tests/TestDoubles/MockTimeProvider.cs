@@ -3,46 +3,45 @@ using System.Collections.Generic;
 using System.Threading;
 using MonBand.Core.Util.Time;
 
-namespace MonBand.Tests.TestDoubles
+namespace MonBand.Tests.TestDoubles;
+
+class MockTimeProvider : ITimeProvider
 {
-    class MockTimeProvider : ITimeProvider
+    readonly IList<MockStopwatch> _createdMockStopwatches;
+    long _utcTicks;
+
+    public DateTimeOffset UtcNow => new(Volatile.Read(ref this._utcTicks), TimeSpan.Zero);
+
+    public MockTimeProvider() : this(DateTimeOffset.Parse("2000-01-01 00:00:00 +00:00")) { }
+
+    public MockTimeProvider(DateTimeOffset initial)
     {
-        readonly IList<MockStopwatch> _createdMockStopwatches;
-        long _utcTicks;
+        Volatile.Write(ref this._utcTicks, initial.UtcTicks);
+        this._createdMockStopwatches = new List<MockStopwatch>();
+    }
 
-        public DateTimeOffset UtcNow => new DateTimeOffset(Volatile.Read(ref this._utcTicks), TimeSpan.Zero);
+    public void Advance(TimeSpan period)
+    {
+        Interlocked.Add(ref this._utcTicks, period.Ticks);
 
-        public MockTimeProvider() : this(DateTimeOffset.Parse("2000-01-01 00:00:00 +00:00")) { }
-
-        public MockTimeProvider(DateTimeOffset initial)
+        lock (this._createdMockStopwatches)
         {
-            Volatile.Write(ref this._utcTicks, initial.UtcTicks);
-            this._createdMockStopwatches = new List<MockStopwatch>();
-        }
-
-        public void Advance(TimeSpan period)
-        {
-            Interlocked.Add(ref this._utcTicks, period.Ticks);
-
-            lock (this._createdMockStopwatches)
+            foreach (var mockStopwatch in this._createdMockStopwatches)
             {
-                foreach (var mockStopwatch in this._createdMockStopwatches)
-                {
-                    mockStopwatch.NotifyTimePassed(period);
-                }
+                mockStopwatch.NotifyTimePassed(period);
             }
         }
+    }
 
-        public IStopwatch CreateStopwatch()
-        {
-            var stopwatch = new MockStopwatch();
+    public IStopwatch CreateStopwatch()
+    {
+        var stopwatch = new MockStopwatch();
             
-            lock (this._createdMockStopwatches)
-            {
-                this._createdMockStopwatches.Add(stopwatch);
-            }
-
-            return stopwatch;
+        lock (this._createdMockStopwatches)
+        {
+            this._createdMockStopwatches.Add(stopwatch);
         }
+
+        return stopwatch;
     }
 }

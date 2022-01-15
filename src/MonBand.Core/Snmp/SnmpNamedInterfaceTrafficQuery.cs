@@ -2,61 +2,70 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MonBand.Core.Snmp
+namespace MonBand.Core.Snmp;
+
+public class SnmpNamedInterfaceTrafficQuery : ISnmpTrafficQuery
 {
-    public class SnmpNamedInterfaceTrafficQuery : ISnmpTrafficQuery
+    readonly EndPoint _remoteEndPoint;
+    readonly string _community;
+    readonly ISnmpInterfaceQuery _interfaceQuery;
+    SnmpTrafficQuery? _currentTrafficQuery;
+
+    public string InterfaceId { get; }
+
+    public SnmpNamedInterfaceTrafficQuery(EndPoint remoteEndPoint, string community, string interfaceName)
     {
-        readonly EndPoint _remoteEndPoint;
-        readonly string _community;
-        readonly ISnmpInterfaceQuery _interfaceQuery;
-        SnmpTrafficQuery _currentTrafficQuery;
+        this._remoteEndPoint = remoteEndPoint;
+        this._community = community;
+        this.InterfaceId = interfaceName;
+        this._interfaceQuery = new SnmpInterfaceQuery(remoteEndPoint, community);
+    }
 
-        public string InterfaceId { get; }
-
-        public SnmpNamedInterfaceTrafficQuery(EndPoint remoteEndPoint, string community, string interfaceName)
+    public async Task<NetworkTraffic?> GetTotalTrafficBytesAsync(CancellationToken cancellationToken)
+    {
+        this._currentTrafficQuery ??= await this.TryGetCurrentTrafficQueryAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (this._currentTrafficQuery == null)
         {
-            this._remoteEndPoint = remoteEndPoint;
-            this._community = community;
-            this.InterfaceId = interfaceName;
-            this._interfaceQuery = new SnmpInterfaceQuery(remoteEndPoint, community);
+            return null;
         }
 
-        public async Task<NetworkTraffic?> GetTotalTrafficBytesAsync(CancellationToken cancellationToken)
+        var queryResult = await this._currentTrafficQuery
+            .GetTotalTrafficBytesAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        // The interface OID may have changed since the last time we asked for it, so look it up again
+        if (queryResult == null)
         {
-            if (this._currentTrafficQuery == null
-                && !await this.ResolveInterfaceOidAsync(cancellationToken).ConfigureAwait(false))
+            this._currentTrafficQuery = await this.TryGetCurrentTrafficQueryAsync(cancellationToken)
+                .ConfigureAwait(false);
+            if (this._currentTrafficQuery == null)
             {
                 return null;
             }
-
-            var queryResult = await this._currentTrafficQuery
+            
+            queryResult = await this._currentTrafficQuery
                 .GetTotalTrafficBytesAsync(cancellationToken)
                 .ConfigureAwait(false);
-
-            return queryResult == null && await this.ResolveInterfaceOidAsync(cancellationToken).ConfigureAwait(false)
-                ? await this._currentTrafficQuery
-                    .GetTotalTrafficBytesAsync(cancellationToken)
-                    .ConfigureAwait(false)
-                : queryResult;
         }
 
-        async Task<bool> ResolveInterfaceOidAsync(CancellationToken cancellationToken)
+        return queryResult;
+    }
+
+    async Task<SnmpTrafficQuery?> TryGetCurrentTrafficQueryAsync(CancellationToken cancellationToken)
+    {
+        var idsByName = await this._interfaceQuery
+            .GetIdsByNameAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        if (idsByName.TryGetValue(this.InterfaceId, out var interfaceOid))
         {
-            var idsByName = await this._interfaceQuery
-                .GetIdsByNameAsync(cancellationToken)
-                .ConfigureAwait(false);
-
-            if (idsByName.TryGetValue(this.InterfaceId, out var interfaceOid))
-            {
-                this._currentTrafficQuery = new SnmpTrafficQuery(
-                    this._remoteEndPoint,
-                    this._community,
-                    interfaceOid);
-                return true;
-            }
-
-            this._currentTrafficQuery = null;
-            return false;
+            return new SnmpTrafficQuery(
+                this._remoteEndPoint,
+                this._community,
+                interfaceOid);
         }
+
+        return null;
     }
 }

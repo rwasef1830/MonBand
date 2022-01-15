@@ -1,107 +1,104 @@
-﻿using System;
-using OxyPlot;
+﻿using OxyPlot;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Series;
 
-namespace MonBand.Windows.Models
+namespace MonBand.Windows.Models;
+
+public class BandwidthPlotModel : PlotModel
 {
-    public class BandwidthPlotModel : PlotModel
+    readonly byte _maxPoints;
+    readonly AreaSeries _downloadBandwidthSeries;
+    readonly AreaSeries _uploadBandwidthSeries;
+    
+    public LinearAxis BandwidthAxis { get; }
+
+    public BandwidthPlotModel(byte maxPoints)
     {
-        readonly byte _maxPoints;
+        this._maxPoints = maxPoints;
 
-        public LinearAxis BandwidthAxis => this.Axes.Count > 0 ? this.Axes[0] as LinearAxis : null;
-        AreaSeries DownloadBandwidthSeries => this.Series.Count > 0 ? this.Series[0] as AreaSeries : null;
-        AreaSeries UploadBandwidthSeries => this.Series.Count > 1 ? this.Series[1] as AreaSeries : null;
-
-        public BandwidthPlotModel(byte maxPoints)
+        this._downloadBandwidthSeries = new AreaSeries
         {
-            this._maxPoints = maxPoints;
+            Title = "Download",
+            Color = OxyColor.FromArgb(255, 0, 0, 255)
+        };
 
-            var downloadBandwidthSeries = new AreaSeries
-            {
-                Title = "Download",
-                Color = OxyColor.FromArgb(255, 0, 0, 255)
-            };
+        this._uploadBandwidthSeries = new AreaSeries
+        {
+            Title = "Upload",
+            Color = OxyColor.FromArgb(255, 255, 0, 0)
+        };
 
-            var uploadBandwidthSeries = new AreaSeries
-            {
-                Title = "Upload",
-                Color = OxyColor.FromArgb(255, 255, 0, 0)
-            };
+        this.Series.Add(this._downloadBandwidthSeries);
+        this.Series.Add(this._uploadBandwidthSeries);
 
-            this.Series.Add(downloadBandwidthSeries);
-            this.Series.Add(uploadBandwidthSeries);
+        var downloadBandwidthAxis = new LinearAxis
+        {
+            TickStyle = TickStyle.Inside,
+            Position = AxisPosition.Left,
+            Title = "Bandwidth",
+            Unit = "Mbps",
+            IntervalLength = 20,
+            TitleFontSize = 10,
+            AbsoluteMinimum = 0
+        };
 
-            var downloadBandwidthAxis = new LinearAxis
-            {
-                TickStyle = TickStyle.Inside,
-                Position = AxisPosition.Left,
-                Title = "Bandwidth",
-                Unit = "Mbps",
-                IntervalLength = 20,
-                TitleFontSize = 10,
-                AbsoluteMinimum = 0
-            };
+        var uploadBandwidthAxis = new LinearAxis
+        {
+            TickStyle = TickStyle.None,
+            Position = AxisPosition.Bottom,
+            IsAxisVisible = false
+        };
 
-            var uploadBandwidthAxis = new LinearAxis
-            {
-                TickStyle = TickStyle.None,
-                Position = AxisPosition.Bottom,
-                IsAxisVisible = false
-            };
+        this.BandwidthAxis = downloadBandwidthAxis;
+        this.Axes.Add(downloadBandwidthAxis);
+        this.Axes.Add(uploadBandwidthAxis);
 
-            this.Axes.Add(downloadBandwidthAxis);
-            this.Axes.Add(uploadBandwidthAxis);
+        var primaryLegend = new Legend
+        {
+            LegendMargin = 0,
+            LegendFontSize = 10,
+            LegendPlacement = LegendPlacement.Inside,
+            LegendPosition = LegendPosition.LeftTop,
+            LegendItemSpacing = 0
+        };
+        this.Legends.Add(primaryLegend);
 
-            var primaryLegend = new Legend
-            {
-                LegendMargin = 0,
-                LegendFontSize = 10,
-                LegendPlacement = LegendPlacement.Inside,
-                LegendPosition = LegendPosition.LeftTop,
-                LegendItemSpacing = 0
-            };
-            this.Legends.Add(primaryLegend);
+        this.Reset();
+    }
 
-            this.Reset();
+    public void Reset()
+    {
+        this.FillDataPoints(this._downloadBandwidthSeries);
+        this.FillDataPoints(this._uploadBandwidthSeries);
+    }
+
+    void FillDataPoints(DataPointSeries series)
+    {
+        series.Points.Clear();
+        for (int i = 0; i < this._maxPoints; i++)
+        {
+            series.Points.Add(new DataPoint(i, 0));
+        }
+    }
+
+    public void AddTraffic(double inMegabits, double outMegabits)
+    {
+        this.AddBandwidthDataPoint(inMegabits, this._downloadBandwidthSeries);
+        this.AddBandwidthDataPoint(outMegabits, this._uploadBandwidthSeries);
+    }
+
+    void AddBandwidthDataPoint(double megabits, DataPointSeries series)
+    {
+        double x = series.Points.Count > 0
+            ? series.Points[^1].X + 1
+            : 0;
+
+        if (series.Points.Count >= this._maxPoints)
+        {
+            series.Points.RemoveAt(0);
         }
 
-        public void Reset()
-        {
-            this.FillDataPoints(this.DownloadBandwidthSeries);
-            this.FillDataPoints(this.UploadBandwidthSeries);
-        }
-
-        void FillDataPoints(DataPointSeries series)
-        {
-            if (series == null) throw new ArgumentNullException(nameof(series));
-
-            series.Points.Clear();
-            for (int i = 0; i < this._maxPoints; i++)
-            {
-                series.Points.Add(new DataPoint(i, 0));
-            }
-        }
-
-        public void AddTraffic(double inMegabits, double outMegabits)
-        {
-            this.AddBandwidthDataPoint(inMegabits, this.DownloadBandwidthSeries);
-            this.AddBandwidthDataPoint(outMegabits, this.UploadBandwidthSeries);
-        }
-
-        void AddBandwidthDataPoint(double megabits, DataPointSeries series)
-        {
-            double x = series.Points.Count > 0
-                ? series.Points[series.Points.Count - 1].X + 1
-                : 0;
-
-            if (series.Points.Count >= this._maxPoints)
-            {
-                series.Points.RemoveAt(0);
-            }
-
-            series.Points.Add(new DataPoint(x, megabits));
-        }
+        series.Points.Add(new DataPoint(x, megabits));
     }
 }

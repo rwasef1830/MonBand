@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Dataflow;
 using FakeItEasy;
@@ -9,76 +10,76 @@ using MonBand.Core.Snmp;
 using MonBand.Tests.TestDoubles;
 using Xunit;
 
-namespace MonBand.Tests.Core.Snmp
+namespace MonBand.Tests.Core.Snmp;
+
+[SuppressMessage("ReSharper", "HeapView.ClosureAllocation")]
+public class SnmpTrafficRateServiceTests
 {
-    public class SnmpTrafficRateServiceTests
+    [Fact]
+    public async Task Service_calculates_rate()
     {
-        [Fact]
-        public async Task Service_calculates_rate()
+        var trafficReadings = new NetworkTraffic?[]
         {
-            var trafficReadings = new NetworkTraffic?[]
-            {
-                new NetworkTraffic(100, 50),
-                new NetworkTraffic(200, 100),
-                new NetworkTraffic(300, 150)
-            };
+            new NetworkTraffic(100, 50),
+            new NetworkTraffic(200, 100),
+            new NetworkTraffic(300, 150)
+        };
 
-            await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
-        }
+        await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
+    }
 
-        [Fact]
-        public async Task Service_calculates_rate_with_counter_wraparound()
+    [Fact]
+    public async Task Service_calculates_rate_with_counter_wraparound()
+    {
+        var trafficReadings = new NetworkTraffic?[]
         {
-            var trafficReadings = new NetworkTraffic?[]
+            new NetworkTraffic(uint.MaxValue - 100, uint.MaxValue - 50),
+            new NetworkTraffic(uint.MaxValue, uint.MaxValue),
+            new NetworkTraffic(100, 50),
+            new NetworkTraffic(200, 100)
+        };
+
+        await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
+    }
+
+    static async Task RunRateCalculationTestAsync(
+        NetworkTraffic?[] inputTrafficReadings,
+        long expectedInBytesRate,
+        long expectedOutBytesRate)
+    {
+        const byte pollIntervalSeconds = 1;
+
+        var timeProvider = new MockTimeProvider();
+
+        var trafficQuery = A.Fake<ISnmpTrafficQuery>();
+        A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
+            .ReturnsNextFromSequence(inputTrafficReadings);
+
+        using var service = new SnmpTrafficRateService(
+            trafficQuery,
+            pollIntervalSeconds,
+            timeProvider,
+            new NullLoggerFactory(),
+            (interval, cancellationToken) =>
             {
-                new NetworkTraffic(uint.MaxValue - 100, uint.MaxValue - 50),
-                new NetworkTraffic(uint.MaxValue, uint.MaxValue),
-                new NetworkTraffic(100, 50),
-                new NetworkTraffic(200, 100)
-            };
+                cancellationToken.ThrowIfCancellationRequested();
+                timeProvider.Advance(interval);
+                return Task.CompletedTask;
+            });
 
-            await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
-        }
+        var batchingBlock = new BatchBlock<NetworkTraffic>(2);
+        var bufferBlock = new BufferBlock<NetworkTraffic>();
+        bufferBlock.LinkTo(batchingBlock);
 
-        static async Task RunRateCalculationTestAsync(
-            NetworkTraffic?[] inputTrafficReadings,
-            long expectedInBytesRate,
-            long expectedOutBytesRate)
+        service.TrafficRateUpdated += (_, t) => bufferBlock.Post(t);
+        service.Start();
+
+        var trafficRates = await batchingBlock.ReceiveAsync().ConfigureAwait(true);
+
+        foreach (var trafficRate in trafficRates)
         {
-            byte pollIntervalSeconds = 1;
-
-            var timeProvider = new MockTimeProvider();
-
-            var trafficQuery = A.Fake<ISnmpTrafficQuery>();
-            A.CallTo(() => trafficQuery.GetTotalTrafficBytesAsync(A<CancellationToken>.Ignored))
-                .ReturnsNextFromSequence(inputTrafficReadings);
-
-            using var service = new SnmpTrafficRateService(
-                trafficQuery,
-                pollIntervalSeconds,
-                timeProvider,
-                new NullLoggerFactory(),
-                (interval, cancellationToken) =>
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    timeProvider.Advance(interval);
-                    return Task.CompletedTask;
-                });
-
-            var batchingBlock = new BatchBlock<NetworkTraffic>(2);
-            var bufferBlock = new BufferBlock<NetworkTraffic>();
-            bufferBlock.LinkTo(batchingBlock);
-
-            service.TrafficRateUpdated += (s, t) => bufferBlock.Post(t);
-            service.Start();
-
-            var trafficRates = await batchingBlock.ReceiveAsync().ConfigureAwait(true);
-
-            foreach (var trafficRate in trafficRates)
-            {
-                trafficRate.InBytes.Should().Be(expectedInBytesRate);
-                trafficRate.OutBytes.Should().Be(expectedOutBytesRate);
-            }
+            trafficRate.InBytes.Should().Be(expectedInBytesRate);
+            trafficRate.OutBytes.Should().Be(expectedOutBytesRate);
         }
     }
 }

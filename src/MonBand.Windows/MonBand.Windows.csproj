@@ -4,6 +4,7 @@
     <SignAssembly>true</SignAssembly>
     <UseWPF>true</UseWPF>
     <AssemblyOriginatorKeyFile>..\..\build\MonBand.snk</AssemblyOriginatorKeyFile>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
