@@ -13,7 +13,7 @@ public partial class App
 {
     readonly LogLevelSignal _logLevelSignal;
     ILoggerFactory _loggerFactory = null!;
-    ILogger _log = null!;
+    ILogger? _log;
 
     public App()
     {
@@ -67,7 +67,7 @@ public partial class App
         }
         catch (Exception ex)
         {
-            this._log.LogError(ex, "MonBand initialization failed");
+            this._log?.LogError(ex, "MonBand initialization failed");
             MessageBox.Show(
                 ex.Message,
                 "MonBand initialization failed",

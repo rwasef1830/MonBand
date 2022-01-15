@@ -2,10 +2,11 @@
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using MonBand.Core;
 using MonBand.Windows.Models;
 using OxyPlot;
-using OxyPlot.Wpf;
 
 namespace MonBand.Windows.UI;
 
@@ -16,6 +17,15 @@ public class CompactMonitorView : UserControl
         typeof(string),
         typeof(CompactMonitorView));
 
+    public static readonly DependencyProperty LoggerFactoryProperty = DependencyProperty.Register(
+        nameof(LoggerFactory),
+        typeof(ILoggerFactory),
+        typeof(CompactMonitorView),
+        new PropertyMetadata
+        {
+            DefaultValue = NullLoggerFactory.Instance
+        });
+
     readonly BandwidthPlotModel _plotModel;
     TextBlock _textBlockMaximum = null!;
     TextBlock _textBlockDownloadBandwidth = null!;
@@ -25,6 +35,12 @@ public class CompactMonitorView : UserControl
     {
         get => (string)this.GetValue(MonitorNameProperty);
         set => this.SetValue(MonitorNameProperty, value);
+    }
+    
+    public ILoggerFactory LoggerFactory
+    {
+        get => (ILoggerFactory)this.GetValue(LoggerFactoryProperty);
+        set => this.SetValue(LoggerFactoryProperty, value);
     }
 
     public CompactMonitorView()
@@ -88,7 +104,7 @@ public class CompactMonitorView : UserControl
             },
             Children =
             {
-                new PlotView { Model = this._plotModel },
+                this.CreatePlotView(),
                 new Label
                 {
                     Padding = new Thickness(1),
@@ -108,6 +124,18 @@ public class CompactMonitorView : UserControl
 
 
         return rootGrid;
+    }
+
+    PlotView CreatePlotView()
+    {
+        var plotView = new PlotView
+        {
+            Model = this._plotModel
+        };
+        plotView.SetBinding(
+            PlotView.LoggerFactoryProperty,
+            new Binding(nameof(this.LoggerFactory)) { Source = this });
+        return plotView;
     }
 
     public void AddTraffic(NetworkTraffic traffic)

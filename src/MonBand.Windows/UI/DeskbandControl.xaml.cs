@@ -75,7 +75,11 @@ public partial class DeskbandControl
 
             trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 
-            var view = new CompactMonitorView { MonitorName = "SNMP: " + snmpPoller };
+            var view = new CompactMonitorView
+            {
+                MonitorName = "SNMP: " + snmpPoller,
+                LoggerFactory = this._loggerFactory
+            };
             this._viewsByService[trafficRateService] = view;
 
             this.RootGrid.ColumnDefinitions.Add(
@@ -102,7 +106,11 @@ public partial class DeskbandControl
 
             trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
 
-            var view = new CompactMonitorView { MonitorName = "Performance counters: " + performanceCounterPoller };
+            var view = new CompactMonitorView
+            {
+                MonitorName = "Performance counters: " + performanceCounterPoller,
+                LoggerFactory = this._loggerFactory
+            };
             this._viewsByService[trafficRateService] = view;
 
             this.RootGrid.ColumnDefinitions.Add(
