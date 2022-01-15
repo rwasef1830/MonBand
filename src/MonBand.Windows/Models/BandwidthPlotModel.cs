@@ -8,29 +8,31 @@ namespace MonBand.Windows.Models;
 public class BandwidthPlotModel : PlotModel
 {
     readonly byte _maxPoints;
-    readonly AreaSeries _downloadBandwidthSeries;
-    readonly AreaSeries _uploadBandwidthSeries;
     
+    public AreaSeries DownloadBandwidthSeries { get; }
+    public AreaSeries UploadBandwidthSeries { get; }
     public LinearAxis BandwidthAxis { get; }
 
     public BandwidthPlotModel(byte maxPoints)
     {
         this._maxPoints = maxPoints;
 
-        this._downloadBandwidthSeries = new AreaSeries
+        this.DownloadBandwidthSeries = new AreaSeries
         {
             Title = "Download",
-            Color = OxyColor.FromArgb(255, 0, 0, 255)
+            Color = OxyColor.FromArgb(255, 0, 0, 255),
+            Fill = OxyColor.FromArgb(255, 0, 0, 255)
         };
 
-        this._uploadBandwidthSeries = new AreaSeries
+        this.UploadBandwidthSeries = new AreaSeries
         {
             Title = "Upload",
-            Color = OxyColor.FromArgb(255, 255, 0, 0)
+            Color = OxyColor.FromArgb(180, 255, 0, 0),
+            Fill = OxyColor.FromArgb(180, 255, 0, 0)
         };
 
-        this.Series.Add(this._downloadBandwidthSeries);
-        this.Series.Add(this._uploadBandwidthSeries);
+        this.Series.Add(this.DownloadBandwidthSeries);
+        this.Series.Add(this.UploadBandwidthSeries);
 
         var downloadBandwidthAxis = new LinearAxis
         {
@@ -69,8 +71,8 @@ public class BandwidthPlotModel : PlotModel
 
     public void Reset()
     {
-        this.FillDataPoints(this._downloadBandwidthSeries);
-        this.FillDataPoints(this._uploadBandwidthSeries);
+        this.FillDataPoints(this.DownloadBandwidthSeries);
+        this.FillDataPoints(this.UploadBandwidthSeries);
     }
 
     void FillDataPoints(DataPointSeries series)
@@ -84,8 +86,8 @@ public class BandwidthPlotModel : PlotModel
 
     public void AddTraffic(double inMegabits, double outMegabits)
     {
-        this.AddBandwidthDataPoint(inMegabits, this._downloadBandwidthSeries);
-        this.AddBandwidthDataPoint(outMegabits, this._uploadBandwidthSeries);
+        this.AddBandwidthDataPoint(inMegabits, this.DownloadBandwidthSeries);
+        this.AddBandwidthDataPoint(outMegabits, this.UploadBandwidthSeries);
     }
 
     void AddBandwidthDataPoint(double megabits, DataPointSeries series)
