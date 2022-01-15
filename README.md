@@ -4,7 +4,7 @@ What is MonBand ?
 -------------------
 MonBand is a bandwidth monitoring application that adds a toolbar to the Windows taskbar (also known as a "deskband") that renders bandwidth graphs. It was written as a lightweight alternative for the same functionality in NetBalancer for those who don't need any of its other features.
 
-It is written in C# and requires the .NET Core 3.1 SDK to build and the .NET Core 3.1 runtime to run. You can install it from https://dot.net. Since it integrates with the shell, it requires Windows to run. It should work on all Windows platforms that .NET Core runs on.
+It is written in C# and requires the .NET Core 6.0 SDK to build and the .NET Core 6.0 runtime to run. You can install it from https://dot.net. Since it integrates with the shell, it requires Windows to run. It should work on all Windows platforms that .NET Core runs on.
 
 It is preferable to compile from a git working copy to get changeset ids embedded into the version number.
 
