@@ -33,21 +33,23 @@ public class SnmpNamedInterfaceTrafficQuery : ISnmpTrafficQuery
         var queryResult = await this._currentTrafficQuery
             .GetTotalTrafficBytesAsync(cancellationToken)
             .ConfigureAwait(false);
+        
+        if (queryResult != null)
+        {
+            return queryResult;
+        }
 
         // The interface OID may have changed since the last time we asked for it, so look it up again
-        if (queryResult == null)
+        this._currentTrafficQuery = await this.TryGetCurrentTrafficQueryAsync(cancellationToken)
+            .ConfigureAwait(false);
+        if (this._currentTrafficQuery == null)
         {
-            this._currentTrafficQuery = await this.TryGetCurrentTrafficQueryAsync(cancellationToken)
-                .ConfigureAwait(false);
-            if (this._currentTrafficQuery == null)
-            {
-                return null;
-            }
-            
-            queryResult = await this._currentTrafficQuery
-                .GetTotalTrafficBytesAsync(cancellationToken)
-                .ConfigureAwait(false);
+            return null;
         }
+            
+        queryResult = await this._currentTrafficQuery
+            .GetTotalTrafficBytesAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         return queryResult;
     }
