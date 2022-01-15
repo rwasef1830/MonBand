@@ -70,7 +70,7 @@ public partial class DeskbandControl
                     new DnsEndPoint(snmpPoller.Address, snmpPoller.Port),
                     snmpPoller.Community,
                     snmpPoller.InterfaceName),
-                3,
+                snmpPoller.PollIntervalSeconds,
                 this._loggerFactory);
 
             trafficRateService.TrafficRateUpdated += this.HandleTrafficRateUpdated;
