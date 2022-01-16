@@ -55,8 +55,8 @@ public class PerformanceCounterTrafficRateService : PollingTrafficRateServiceBas
     protected override Task CalculateRateAsync(TimeSpan pollInterval, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var inBytes = (long)this._bytesReceivedCounter.NextValue();
-        var outBytes = (long)this._bytesSentCounter.NextValue();
+        var inBytes = (ulong)this._bytesReceivedCounter.NextValue();
+        var outBytes = (ulong)this._bytesSentCounter.NextValue();
         this.OnTrafficRateUpdated(new NetworkTraffic(inBytes, outBytes));
         return Task.CompletedTask;
     }

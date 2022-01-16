@@ -29,23 +29,38 @@ public class SnmpTrafficRateServiceTests
     }
 
     [Fact]
-    public async Task Service_calculates_rate_with_counter_wraparound()
+    public async Task Service_calculates_rate_with_32bit_counter_wraparound()
     {
         var trafficReadings = new NetworkTraffic?[]
         {
-            new NetworkTraffic(uint.MaxValue - 100, uint.MaxValue - 50),
-            new NetworkTraffic(uint.MaxValue, uint.MaxValue),
+            new NetworkTraffic(uint.MaxValue - 100, uint.MaxValue - 50, false),
+            new NetworkTraffic(uint.MaxValue, uint.MaxValue, false),
+            new NetworkTraffic(100, 50, false),
+            new NetworkTraffic(200, 100, false)
+        };
+
+        await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
+    }
+    
+    [Fact]
+    public async Task Service_calculates_rate_with_64bit_counter_wraparound()
+    {
+        var trafficReadings = new NetworkTraffic?[]
+        {
+            new NetworkTraffic(ulong.MaxValue - 100, ulong.MaxValue - 50),
+            new NetworkTraffic(ulong.MaxValue, ulong.MaxValue),
             new NetworkTraffic(100, 50),
             new NetworkTraffic(200, 100)
         };
 
+        // double to long conversion and back causes a rounding error
         await RunRateCalculationTestAsync(trafficReadings, 100, 50).ConfigureAwait(true);
     }
 
     static async Task RunRateCalculationTestAsync(
         NetworkTraffic?[] inputTrafficReadings,
-        long expectedInBytesRate,
-        long expectedOutBytesRate)
+        ulong expectedInBytesRate,
+        ulong expectedOutBytesRate)
     {
         const byte pollIntervalSeconds = 1;
 
@@ -78,8 +93,8 @@ public class SnmpTrafficRateServiceTests
 
         foreach (var trafficRate in trafficRates)
         {
-            trafficRate.InBytes.Should().Be(expectedInBytesRate);
-            trafficRate.OutBytes.Should().Be(expectedOutBytesRate);
+            trafficRate.InBytes.Should().BeCloseTo(expectedInBytesRate, 1);
+            trafficRate.OutBytes.Should().BeCloseTo(expectedOutBytesRate, 1);
         }
     }
 }

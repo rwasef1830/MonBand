@@ -14,11 +14,15 @@ public class SnmpTrafficQuery : ISnmpTrafficQuery
 {
     const string c_NetworkInterfaceReceivedOctetsPrefix = "1.3.6.1.2.1.2.2.1.10.";
     const string c_NetworkInterfaceSentOctetsPrefix = "1.3.6.1.2.1.2.2.1.16.";
+    const string c_NetworkInterfaceReceivedOctets64Prefix = "1.3.6.1.2.1.31.1.1.1.6.";
+    const string c_NetworkInterfaceSentOctets64Prefix = "1.3.6.1.2.1.31.1.1.1.10.";
 
     readonly EndPoint _remoteEndPoint;
     readonly OctetString _community;
     readonly string _receivedOctetsOid;
     readonly string _sentOctetsOid;
+    readonly string _receivedOctets64Oid;
+    readonly string _sentOctets64Oid;
     readonly Variable[] _requestVariables;
 
     public string InterfaceId { get; }
@@ -29,10 +33,14 @@ public class SnmpTrafficQuery : ISnmpTrafficQuery
         this._remoteEndPoint = remoteEndPoint ?? throw new ArgumentNullException(nameof(remoteEndPoint));
         this._receivedOctetsOid = c_NetworkInterfaceReceivedOctetsPrefix + interfaceNumber;
         this._sentOctetsOid = c_NetworkInterfaceSentOctetsPrefix + interfaceNumber;
+        this._receivedOctets64Oid = c_NetworkInterfaceReceivedOctets64Prefix + interfaceNumber;
+        this._sentOctets64Oid = c_NetworkInterfaceSentOctets64Prefix + interfaceNumber;
         this._requestVariables = new[]
         {
             new Variable(new ObjectIdentifier(this._receivedOctetsOid)),
-            new Variable(new ObjectIdentifier(this._sentOctetsOid))
+            new Variable(new ObjectIdentifier(this._sentOctetsOid)),
+            new Variable(new ObjectIdentifier(this._receivedOctets64Oid)),
+            new Variable(new ObjectIdentifier(this._sentOctets64Oid))
         };
 
         this.InterfaceId = interfaceNumber.ToString();
@@ -57,14 +65,16 @@ public class SnmpTrafficQuery : ISnmpTrafficQuery
             .WithCancellation(cancellationToken)
             .ConfigureAwait(false);
 
-        long? totalReceivedBytes = null;
-        long? totalSentBytes = null;
+        ulong? totalReceivedBytes = null;
+        ulong? totalSentBytes = null;
+        ulong? totalReceivedBytes64 = null;
+        ulong? totalSentBytes64 = null;
 
         foreach (var variable in result)
         {
             if (variable.Data is NoSuchInstance or NoSuchObject)
             {
-                return null;
+                continue;
             }
 
             if (variable.Id.ToString() == this._receivedOctetsOid)
@@ -76,14 +86,30 @@ public class SnmpTrafficQuery : ISnmpTrafficQuery
             if (variable.Id.ToString() == this._sentOctetsOid)
             {
                 totalSentBytes = ((Counter32)variable.Data).ToUInt32();
+                continue;
+            }
+
+            if (variable.Id.ToString() == this._receivedOctets64Oid)
+            {
+                totalReceivedBytes64 = ((Counter64)variable.Data).ToUInt64();
+                continue;
+            }
+
+            if (variable.Id.ToString() == this._sentOctets64Oid)
+            {
+                totalSentBytes64 = ((Counter64)variable.Data).ToUInt64();
             }
         }
 
-        if (totalReceivedBytes == null || totalSentBytes == null)
+        bool is64BitCounter = totalReceivedBytes64.HasValue && totalSentBytes64.HasValue;
+        totalReceivedBytes64 ??= totalReceivedBytes;
+        totalSentBytes64 ??= totalSentBytes;
+
+        if (totalReceivedBytes64 == null || totalSentBytes64 == null)
         {
             return null;
         }
 
-        return new NetworkTraffic(totalReceivedBytes.Value, totalSentBytes.Value);
+        return new NetworkTraffic(totalReceivedBytes64.Value, totalSentBytes64.Value, is64BitCounter);
     }
 }

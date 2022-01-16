@@ -2,18 +2,20 @@
 
 public readonly struct NetworkTraffic
 {
-    public long InBytes { get; }
-    public long OutBytes { get; }
+    public ulong InBytes { get; }
+    public ulong OutBytes { get; }
+    public bool Is64BitCounter { get; }
 
-    public NetworkTraffic(long inBytes, long outBytes)
+    public NetworkTraffic(ulong inBytes, ulong outBytes, bool is64BitCounter = true)
     {
         this.InBytes = inBytes;
         this.OutBytes = outBytes;
+        this.Is64BitCounter = is64BitCounter;
     }
 
     public override string ToString()
     {
-        return $"In: {this.InBytes}; Out: {this.OutBytes}";
+        return $"In: {this.InBytes}; Out: {this.OutBytes} (64-bit: {this.Is64BitCounter})";
     }
 
     public (double InMegabits, double OutMegabits) AsMegabits()

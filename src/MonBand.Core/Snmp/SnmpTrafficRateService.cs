@@ -73,26 +73,26 @@ public class SnmpTrafficRateService : PollingTrafficRateServiceBase
         if (this._previousTraffic.HasValue)
         {
             var secondsDelta = pollInterval.TotalSeconds;
-            var receivedBytesDelta = this._currentTraffic.Value.InBytes - this._previousTraffic.Value.InBytes;
-            var sentBytesDelta = this._currentTraffic.Value.OutBytes - this._previousTraffic.Value.OutBytes;
+            var receivedBytesDelta = (long)(this._currentTraffic.Value.InBytes - this._previousTraffic.Value.InBytes);
+            var sentBytesDelta = (long)(this._currentTraffic.Value.OutBytes - this._previousTraffic.Value.OutBytes);
 
             if (receivedBytesDelta < 0)
             {
                 // Counter wrap around occurred.
-                receivedBytesDelta += uint.MaxValue;
+                receivedBytesDelta += this._currentTraffic.Value.Is64BitCounter ? long.MaxValue : uint.MaxValue;
             }
 
             if (sentBytesDelta < 0)
             {
                 // Counter wrap around occurred.
-                sentBytesDelta += uint.MaxValue;
+                sentBytesDelta += this._currentTraffic.Value.Is64BitCounter ? long.MaxValue : uint.MaxValue;
             }
 
-            var receivedBytesPerSecond = (long)(receivedBytesDelta / secondsDelta);
-            var sentBytesPerSecond = (long)(sentBytesDelta / secondsDelta);
+            var receivedBytesPerSecond = (ulong)(receivedBytesDelta / secondsDelta);
+            var sentBytesPerSecond = (ulong)(sentBytesDelta / secondsDelta);
 
-            var filteredReceivedBytesPerSecond = (long)this._downloadRateFilter.FilterValue(receivedBytesPerSecond);
-            var filteredSentBytesPerSecond = (long)this._uploadRateFilter.FilterValue(sentBytesPerSecond);
+            var filteredReceivedBytesPerSecond = (ulong)this._downloadRateFilter.FilterValue(receivedBytesPerSecond);
+            var filteredSentBytesPerSecond = (ulong)this._uploadRateFilter.FilterValue(sentBytesPerSecond);
 
             if (filteredReceivedBytesPerSecond != receivedBytesPerSecond)
             {
