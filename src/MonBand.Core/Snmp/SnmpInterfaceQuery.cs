@@ -50,12 +50,13 @@ public class SnmpInterfaceQuery : ISnmpInterfaceQuery
 
         return variables
             .Where(x => x.Data is not NoSuchInstance && x.Data is not NoSuchObject)
+            .GroupBy(x => x.Data.ToString(), x =>
+            {
+                var oidString = x.Id.ToString();
+                return int.Parse(oidString[(oidString.LastIndexOf('.') + 1)..]);
+            })
             .ToDictionary(
-                x => x.Data.ToString(),
-                x =>
-                {
-                    var oidString = x.Id.ToString();
-                    return int.Parse(oidString[(oidString.LastIndexOf('.') + 1)..]);
-                });
+                x => x.Key,
+                x => x.Max());
     }
 }
