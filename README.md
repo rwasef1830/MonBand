@@ -44,7 +44,7 @@ Features
 * Standalone configuration application that administers the configuration and communicates with the deskband when configuration is updated without needing to restart the shell.
 * Deskband standalone test mode (without installation in Windows) by running `MonBand.Windows.Standalone.exe deskband-test`.
 * Bandwidth monitoring of any local network interface traffic rate using performance counters.
-* Bandwidth monitoring of a remote network interface using SNMPv1 counters: 
+* Bandwidth monitoring of a remote network interface using SNMPv1/2c counters: 
 	* GUI to query remote interface names and pick which one to monitor. To monitor multiple interfaces, create another SNMP monitor to the same server.
 	* Configurable poll interval with automatic compensation for poll latency to reduce rate calculation inaccuracy.
 	* 32-bit counter wrap-around is transparently handled.
