@@ -48,4 +48,5 @@ Features
 	* GUI to query remote interface names and pick which one to monitor. To monitor multiple interfaces, create another SNMP monitor to the same server.
 	* Configurable poll interval with automatic compensation for poll latency to reduce rate calculation inaccuracy.
 	* 32-bit counter wrap-around is transparently handled.
+	* 64-bit counters are preferred if present and wrap-around is transparently handled.
 	* Anomalous rate spikes (due to slight irregularities of polling interval and multiple counter updates in case of slow updating counters) are smoothed using ZScore algorithm.
