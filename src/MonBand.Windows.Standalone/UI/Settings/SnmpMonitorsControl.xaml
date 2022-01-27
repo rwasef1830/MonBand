@@ -129,10 +129,11 @@
 
                     <Label Grid.Row="5" Grid.Column="0">Poll Interval (sec)</Label>
                     <numericinput:SpinnerDecorator Grid.Row="5" Grid.Column="1">
-                        <numericinput:IntBox Value="{Binding PollIntervalSeconds}"
-                                             AllowSpinners="True"
-                                             MinValue="1"
-                                             MaxValue="600" />
+                        <numericinput:DoubleBox Value="{Binding PollIntervalSeconds}"
+                                                AllowSpinners="True"
+                                                MinValue="0.05"
+                                                Increment="0.05"
+                                                MaxValue="600" />
                     </numericinput:SpinnerDecorator>
 
                     <ui:PlotView Grid.Row="6" Grid.ColumnSpan="2" Grid.Column="0"
