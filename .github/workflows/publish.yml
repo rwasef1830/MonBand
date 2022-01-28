@@ -26,11 +26,12 @@ jobs:
 
       - name: get project version
         run: |
-          for /F "usebackq" %%i IN (`powershell -c \"[System.Diagnostics.FileVersionInfo]::GetVersionInfo(\"build\Release\MonBand.Core.dll\").FileVersion.ToString()"`) DO SET MONBAND_VER=%%i
+          $MONBAND_VER = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("build\Release\MonBand.Core.dll").FileVersion.ToString()
+          echo "::set-env name=MONBAND_VER::$MONBAND_VER"
           
       - uses: edgarrc/action-7z@v1
         with:
-          args: 7z a -t7z -mx=9 MonBand-%MONBAND_VER%.7z ./build/release/*
+          args: 7z a -t7z -mx=9 MonBand-$MONBAND_VER.7z ./build/release/*
           
       - uses: ncipollo/release-action@v1
         with:
