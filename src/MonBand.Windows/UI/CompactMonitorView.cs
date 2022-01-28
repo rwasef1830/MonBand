@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Linq;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
@@ -28,6 +29,8 @@ public class CompactMonitorView : UserControl
 
     readonly BandwidthPlotModel _plotModel;
     TextBlock _textBlockMaximum = null!;
+    TextBlock _textBlockAverageDownloadBandwidth = null!;
+    TextBlock _textBlockAverageUploadBandwidth = null!;
     TextBlock _textBlockDownloadBandwidth = null!;
     TextBlock _textBlockUploadBandwidth = null!;
 
@@ -64,6 +67,8 @@ public class CompactMonitorView : UserControl
             new Binding(nameof(this.MonitorName)) { Source = this });
 
         this._textBlockMaximum = new TextBlock { Text = "Maximum: 0.0 Mbps" };
+        this._textBlockAverageDownloadBandwidth = new TextBlock { Text = "Average download: 0.0 Mbps" };
+        this._textBlockAverageUploadBandwidth = new TextBlock { Text = "Average upload: 0.0 Mbps" };
 
         this._textBlockDownloadBandwidth = new TextBlock
         {
@@ -98,7 +103,9 @@ public class CompactMonitorView : UserControl
                     Children =
                     {
                         monitorNameTextBlock,
-                        this._textBlockMaximum
+                        this._textBlockMaximum,
+                        this._textBlockAverageDownloadBandwidth,
+                        this._textBlockAverageUploadBandwidth
                     }
                 }
             },
@@ -146,5 +153,10 @@ public class CompactMonitorView : UserControl
         this._textBlockUploadBandwidth.Text = $"U: {outMegabits:F1} Mbps";
         this._plotModel.InvalidatePlot(true);
         this._textBlockMaximum.Text = $"Maximum: {this._plotModel.BandwidthAxis.DataMaximum:F1} Mbps";
+
+        var averageDownloadBandwidth = this._plotModel.DownloadBandwidthSeries.Points.Average(x => x.Y);
+        var averageUploadBandwidth = this._plotModel.UploadBandwidthSeries.Points.Average(x => x.Y);
+        this._textBlockAverageDownloadBandwidth.Text = $"Average download: {averageDownloadBandwidth:F1} Mbps";
+        this._textBlockAverageUploadBandwidth.Text = $"Average upload: {averageUploadBandwidth:F2} Mbps";
     }
 }
