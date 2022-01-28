@@ -133,6 +133,7 @@
                                                  AllowSpinners="True"
                                                  MinValue="0.05"
                                                  Increment="0.05"
+                                                 SpinUpdateMode="PropertyChanged"
                                                  MaxValue="600" />
                     </numericinput:SpinnerDecorator>
 
