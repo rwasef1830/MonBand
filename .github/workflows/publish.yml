@@ -26,8 +26,7 @@ jobs:
 
       - name: build release archive
         run: |
-          cd build/release
-          $MONBAND_VER = [Reflection.AssemblyName]::GetAssemblyName("MonBand.Core.dll") | Select -ExpandProperty Version | Select-String 0
+          $MONBAND_VER = [Reflection.AssemblyName]::GetAssemblyName("$PWD/build/release/MonBand.Core.dll") | Select -ExpandProperty Version | Select-String 0
           7z a -t7z -mx=9 MonBand-$MONBAND_VER.7z ./build/release/*
           
       - uses: ncipollo/release-action@v1
