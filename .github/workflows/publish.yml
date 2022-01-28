@@ -1,0 +1,41 @@
+name: publish
+on:
+  push:
+    tags:
+      - '*'
+
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.x'
+
+      - name: publish standalone project
+        run: |
+          dotnet publish -c Release -o build/release src/MonBand.Windows.Standalone
+
+      - name: publish comhost project
+        run: |
+          dotnet publish -c Release -o build/release src/MonBand.Windows.ComHost
+
+      - name: get project version
+        run: |
+          for /F "usebackq" %%i IN (`powershell -c "[System.Diagnostics.FileVersionInfo]::GetVersionInfo(\"build\R
+elease\MonBand.Core.dll\").FileVersion.ToString()"`) DO SET MONBAND_VER=%%i
+          
+      - uses: edgarrc/action-7z@v1
+        with:
+          args: 7z a -t7z -mx=9 MonBand-%MONBAND_VER%.7z ./build/release/*
+          
+      - uses: ncipollo/release-action@v1
+        with:
+            artifacts: "MonBand-%MONBAND_VER%.7z"
+            generateReleaseNotes: true
+            allowUpdates: true
+            token: ${{ secrets.GITHUB_TOKEN }}
