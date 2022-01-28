@@ -27,7 +27,7 @@ jobs:
       - name: get project version
         run: |
           $MONBAND_VER = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("build\Release\MonBand.Core.dll").FileVersion.ToString()
-          echo "::set-env name=MONBAND_VER::$MONBAND_VER"
+          echo "MONBAND_VER=$MONBAND_VER" >> $GITHUB_ENV
           
       - uses: edgarrc/action-7z@v1
         with:
