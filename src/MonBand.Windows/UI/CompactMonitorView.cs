@@ -157,6 +157,6 @@ public class CompactMonitorView : UserControl
         var averageDownloadBandwidth = this._plotModel.DownloadBandwidthSeries.Points.Average(x => x.Y);
         var averageUploadBandwidth = this._plotModel.UploadBandwidthSeries.Points.Average(x => x.Y);
         this._textBlockAverageDownloadBandwidth.Text = $"Average download: {averageDownloadBandwidth:F1} Mbps";
-        this._textBlockAverageUploadBandwidth.Text = $"Average upload: {averageUploadBandwidth:F2} Mbps";
+        this._textBlockAverageUploadBandwidth.Text = $"Average upload: {averageUploadBandwidth:F1} Mbps";
     }
 }
