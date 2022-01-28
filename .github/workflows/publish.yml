@@ -24,14 +24,10 @@ jobs:
         run: |
           dotnet publish -c Release -o build/release src/MonBand.Windows.ComHost
 
-      - name: get project version
+      - name: build release archive
         run: |
           $MONBAND_VER = [System.Diagnostics.FileVersionInfo]::GetVersionInfo("build\Release\MonBand.Core.dll").FileVersion.ToString()
-          echo "MONBAND_VER=$MONBAND_VER" >> $GITHUB_ENV
-          
-      - uses: edgarrc/action-7z@v1
-        with:
-          args: 7z a -t7z -mx=9 MonBand-$MONBAND_VER.7z ./build/release/*
+          7z a -t7z -mx=9 MonBand-$MONBAND_VER.7z ./build/release/*
           
       - uses: ncipollo/release-action@v1
         with:
