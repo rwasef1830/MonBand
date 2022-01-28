@@ -8,7 +8,7 @@ class SnmpTrafficRateValueFilter
     readonly ZScore _zScore;
     double _lastNonPeakValue;
 
-    public SnmpTrafficRateValueFilter(double pollIntervalSeconds)
+    public SnmpTrafficRateValueFilter(decimal pollIntervalSeconds)
     {
         // These numbers have been picked carefully to try to catch the SNMP double-interval-read spike
         // which happens due to the counters getting updated twice during the imprecise poll interval

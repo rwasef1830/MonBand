@@ -8,7 +8,7 @@ public class SnmpPollerConfig : ObservableModelBase
     ushort _port;
     string _community = string.Empty;
     string _interfaceName = string.Empty;
-    double _pollIntervalSeconds = 3;
+    decimal _pollIntervalSeconds = 3;
 
     public string Address
     {
@@ -34,7 +34,7 @@ public class SnmpPollerConfig : ObservableModelBase
         set => this.Set(ref this._interfaceName, value);
     }
 
-    public double PollIntervalSeconds
+    public decimal PollIntervalSeconds
     {
         get => this._pollIntervalSeconds;
         set => this.Set(ref this._pollIntervalSeconds, value);

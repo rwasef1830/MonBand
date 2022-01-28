@@ -17,7 +17,7 @@ public class SnmpTrafficRateService : PollingTrafficRateServiceBase
 
     public SnmpTrafficRateService(
         ISnmpTrafficQuery trafficQuery,
-        double pollIntervalSeconds,
+        decimal pollIntervalSeconds,
         ILoggerFactory loggerFactory) : this(
         trafficQuery,
         pollIntervalSeconds,
@@ -27,11 +27,11 @@ public class SnmpTrafficRateService : PollingTrafficRateServiceBase
 
     internal SnmpTrafficRateService(
         ISnmpTrafficQuery trafficQuery,
-        double pollIntervalSeconds,
+        decimal pollIntervalSeconds,
         ITimeProvider timeProvider,
         ILoggerFactory loggerFactory,
         Func<TimeSpan, CancellationToken, Task> delayTaskFactory) : base(
-        TimeSpan.FromSeconds(pollIntervalSeconds),
+        TimeSpan.FromSeconds((double)pollIntervalSeconds),
         timeProvider,
         loggerFactory,
         delayTaskFactory)
